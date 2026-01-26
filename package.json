@@ -1,0 +1,29 @@
+{
+  "name": "aa-passkey-wallet",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AA Passkey Web Wallet - Account Abstraction with Passkey authentication",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=@aa-wallet/web",
+    "build": "npm run build --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "clean": "npm run clean --workspaces --if-present && rimraf node_modules"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "wallet",
+    "ethereum",
+    "account-abstraction",
+    "eip-4337",
+    "passkey",
+    "webauthn"
+  ],
+  "license": "MIT"
+}

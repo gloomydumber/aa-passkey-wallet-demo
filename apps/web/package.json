@@ -1,0 +1,18 @@
+{
+  "name": "@aa-wallet/web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "clean": "rimraf .next out"
+  },
+  "dependencies": {
+    "@aa-wallet/core": "*",
+    "@aa-wallet/passkey": "*",
+    "@aa-wallet/types": "*",
+    "@aa-wallet/utils": "*"
+  }
+}
