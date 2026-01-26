@@ -14,7 +14,9 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "npm run test --workspaces --if-present",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "clean": "npm run clean --workspaces --if-present && rimraf node_modules",
     "typecheck": "tsc --noEmit"
   },
@@ -39,6 +41,8 @@
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",
     "eslint-config-prettier": "^9.1.0",
-    "prettier": "^3.2.4"
+    "prettier": "^3.2.4",
+    "vitest": "^1.2.0",
+    "@vitest/coverage-v8": "^1.2.0"
   }
 }
