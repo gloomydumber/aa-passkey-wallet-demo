@@ -42,3 +42,4 @@ npm-debug.log*
 # AI instructions
 CLAUDE.md
 HANDOFF.md
+.claude/
