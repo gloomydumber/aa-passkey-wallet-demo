@@ -43,7 +43,9 @@ export function formatBalance(
   maxDecimals = 4
 ): string {
   const formatted = formatUnits(balance, decimals);
-  const [intPart, fracPart] = formatted.split(".");
+  const parts = formatted.split(".");
+  const intPart = parts[0] ?? "0";
+  const fracPart = parts[1];
 
   let displayValue: string;
   if (fracPart) {

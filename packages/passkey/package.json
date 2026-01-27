@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@aa-wallet/types": "*",
-    "@aa-wallet/utils": "*"
+    "@aa-wallet/utils": "*",
+    "@simplewebauthn/browser": "^13.0.0"
   }
 }
