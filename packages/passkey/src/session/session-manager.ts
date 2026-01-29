@@ -2,7 +2,7 @@
  * Session manager with auto-logout on inactivity
  */
 
-import type { StorageAdapter } from "@aa-wallet/types";
+import type { StoragePort } from "@aa-wallet/types";
 import type { SessionState, SessionConfig, StoredSession } from "../types";
 
 const SESSION_KEY = "passkey_session";
@@ -19,13 +19,13 @@ export type SessionExpirationCallback = (reason: "expired" | "inactivity") => vo
  */
 export class SessionManager {
   private config: SessionConfig;
-  private storage: StorageAdapter;
+  private storage: StoragePort;
   private expirationCallback?: SessionExpirationCallback;
   private inactivityTimer?: ReturnType<typeof setTimeout>;
   private sessionTimer?: ReturnType<typeof setTimeout>;
 
   constructor(
-    storage: StorageAdapter,
+    storage: StoragePort,
     config?: Partial<SessionConfig>,
     onExpiration?: SessionExpirationCallback
   ) {

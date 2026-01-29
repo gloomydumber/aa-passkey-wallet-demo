@@ -2,7 +2,7 @@
  * High-level PasskeyService combining all passkey operations
  */
 
-import type { StorageAdapter } from "@aa-wallet/types";
+import type { StoragePort } from "@aa-wallet/types";
 import type {
   PasskeyCredential,
   PasskeyConfig,
@@ -31,7 +31,7 @@ export interface PasskeyServiceConfig {
   /** Session configuration (optional) */
   session?: Partial<SessionConfig>;
   /** Storage adapter for credentials and session */
-  storage: StorageAdapter;
+  storage: StoragePort;
 }
 
 /**

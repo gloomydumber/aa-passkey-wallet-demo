@@ -1,8 +1,8 @@
 /**
- * Encrypted storage adapter that wraps any StorageAdapter
+ * Encrypted storage adapter that wraps any StoragePort
  */
 
-import type { StorageAdapter } from "@aa-wallet/types";
+import type { StoragePort } from "@aa-wallet/types";
 import { stringToUint8Array, uint8ArrayToString } from "@aa-wallet/utils";
 import type { CryptoAdapter, EncryptedData } from "../types";
 import { WebCryptoAdapter } from "./crypto";
@@ -17,7 +17,7 @@ export type SecretProvider = () => string | Promise<string>;
  */
 export interface EncryptedStorageConfig {
   /** Underlying storage adapter */
-  storage: StorageAdapter;
+  storage: StoragePort;
   /** Secret provider for encryption key derivation */
   secretProvider: SecretProvider;
   /** Optional crypto adapter (defaults to WebCryptoAdapter) */
@@ -27,8 +27,8 @@ export interface EncryptedStorageConfig {
 /**
  * Storage adapter that encrypts data before storing
  */
-export class EncryptedStorageAdapter implements StorageAdapter {
-  private storage: StorageAdapter;
+export class EncryptedStoragePort implements StoragePort {
+  private storage: StoragePort;
   private secretProvider: SecretProvider;
   private cryptoAdapter: CryptoAdapter;
 

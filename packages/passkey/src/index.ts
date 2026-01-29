@@ -27,7 +27,7 @@ export {
   WebCryptoAdapter,
   generateChallenge,
   generateUserId,
-  EncryptedStorageAdapter,
+  EncryptedStoragePort,
   CredentialStore,
 } from "./storage";
 export type { SecretProvider, EncryptedStorageConfig } from "./storage";

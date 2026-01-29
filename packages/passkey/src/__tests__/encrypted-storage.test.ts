@@ -3,18 +3,18 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import type { StorageAdapter } from "@aa-wallet/types";
+import type { StoragePort } from "@aa-wallet/types";
 import { WebCryptoAdapter } from "../storage/crypto";
-import { EncryptedStorageAdapter } from "../storage/encrypted-storage";
+import { EncryptedStoragePort } from "../storage/encrypted-storage";
 
 // Mock storage implementation
-function createMockStorage(): StorageAdapter {
+function createMockStorage(): StoragePort {
   const store = new Map<string, unknown>();
   return {
-    get: vi.fn(async (key: string) => store.get(key) ?? null) as StorageAdapter["get"],
+    get: vi.fn(async (key: string) => store.get(key) ?? null) as StoragePort["get"],
     set: vi.fn(async (key: string, value: unknown) => {
       store.set(key, value);
-    }) as StorageAdapter["set"],
+    }) as StoragePort["set"],
     remove: vi.fn(async (key: string) => {
       store.delete(key);
     }),
@@ -68,14 +68,14 @@ describe("WebCryptoAdapter", () => {
   });
 });
 
-describe("EncryptedStorageAdapter", () => {
-  let mockStorage: StorageAdapter;
-  let encryptedStorage: EncryptedStorageAdapter;
+describe("EncryptedStoragePort", () => {
+  let mockStorage: StoragePort;
+  let encryptedStorage: EncryptedStoragePort;
   const secret = "test-encryption-secret";
 
   beforeEach(() => {
     mockStorage = createMockStorage();
-    encryptedStorage = new EncryptedStorageAdapter({
+    encryptedStorage = new EncryptedStoragePort({
       storage: mockStorage,
       secretProvider: () => secret,
     });
@@ -110,7 +110,7 @@ describe("EncryptedStorageAdapter", () => {
   });
 
   it("should handle async secret provider", async () => {
-    const asyncStorage = new EncryptedStorageAdapter({
+    const asyncStorage = new EncryptedStoragePort({
       storage: mockStorage,
       secretProvider: async () => {
         await new Promise((resolve) => setTimeout(resolve, 10));

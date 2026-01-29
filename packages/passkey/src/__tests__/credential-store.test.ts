@@ -3,19 +3,19 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import type { StorageAdapter } from "@aa-wallet/types";
+import type { StoragePort } from "@aa-wallet/types";
 import type { PasskeyCredential } from "../types";
 import { CredentialStore } from "../storage/credential-store";
 
 // Mock storage implementation
-function createMockStorage(): StorageAdapter & { _store: Map<string, unknown> } {
+function createMockStorage(): StoragePort & { _store: Map<string, unknown> } {
   const store = new Map<string, unknown>();
   return {
     _store: store,
-    get: vi.fn(async (key: string) => store.get(key) ?? null) as StorageAdapter["get"],
+    get: vi.fn(async (key: string) => store.get(key) ?? null) as StoragePort["get"],
     set: vi.fn(async (key: string, value: unknown) => {
       store.set(key, value);
-    }) as StorageAdapter["set"],
+    }) as StoragePort["set"],
     remove: vi.fn(async (key: string) => {
       store.delete(key);
     }),

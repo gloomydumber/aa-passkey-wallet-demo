@@ -2,7 +2,7 @@
  * Credential store for managing passkey credentials
  */
 
-import type { StorageAdapter } from "@aa-wallet/types";
+import type { StoragePort } from "@aa-wallet/types";
 import type { PasskeyCredential } from "../types";
 
 const CREDENTIALS_KEY = "passkey_credentials";
@@ -12,7 +12,7 @@ const ACTIVE_CREDENTIAL_KEY = "active_credential_id";
  * Store for managing passkey credentials
  */
 export class CredentialStore {
-  constructor(private storage: StorageAdapter) {}
+  constructor(private storage: StoragePort) {}
 
   /**
    * Save a new credential
