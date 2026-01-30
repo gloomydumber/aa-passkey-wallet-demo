@@ -10,8 +10,6 @@ import type {
   SessionConfig,
   PasskeyServiceEvent,
   PasskeyEventListener,
-  RegistrationResponse,
-  AuthenticationResponse,
 } from "./types";
 import { CredentialStore } from "./storage/credential-store";
 import { SessionManager, type SessionExpirationCallback } from "./session/session-manager";

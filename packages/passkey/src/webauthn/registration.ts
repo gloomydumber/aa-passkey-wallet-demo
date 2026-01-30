@@ -23,8 +23,7 @@ import { isUserCancellation, isCredentialExistsError, parseCOSEPublicKey } from 
  */
 export function buildRegistrationOptions(
   user: UserInfo,
-  config: PasskeyConfig,
-  existingCredentialIds: string[] = []
+  config: PasskeyConfig
 ): PasskeyRegistrationOptions {
   return {
     rp: {
@@ -194,6 +193,6 @@ export async function registerPasskey(
     displayName: userName,
   };
 
-  const options = buildRegistrationOptions(user, config, existingCredentialIds);
+  const options = buildRegistrationOptions(user, config);
   return startRegistration(options, existingCredentialIds);
 }
