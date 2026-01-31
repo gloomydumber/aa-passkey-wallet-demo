@@ -1,45 +1,11 @@
 /**
  * Internal types for @aa-wallet/passkey
+ *
+ * Note: WebAuthn-related types have been removed as WebAuthn operations
+ * are now handled by viem's account-abstraction utilities.
  */
 
-import type {
-  PasskeyCredential,
-  PasskeyRegistrationOptions,
-  PasskeyAuthenticationOptions,
-  PasskeySignature,
-  SessionState,
-} from "@aa-wallet/types";
-
-/**
- * Response from WebAuthn registration
- */
-export interface RegistrationResponse {
-  credential: PasskeyCredential;
-  attestationObject: string;
-  clientDataJSON: string;
-}
-
-/**
- * Response from WebAuthn authentication
- */
-export interface AuthenticationResponse {
-  credentialId: string;
-  signature: PasskeySignature;
-}
-
-/**
- * Platform abstraction for WebAuthn operations
- */
-export interface WebAuthnAdapter {
-  /** Check if WebAuthn is supported */
-  isSupported(): boolean;
-  /** Check if platform authenticator is available */
-  isPlatformAuthenticatorAvailable(): Promise<boolean>;
-  /** Start registration ceremony */
-  startRegistration(options: PasskeyRegistrationOptions): Promise<RegistrationResponse>;
-  /** Start authentication ceremony */
-  startAuthentication(options: PasskeyAuthenticationOptions): Promise<AuthenticationResponse>;
-}
+import type { PasskeyCredential, SessionState } from "@aa-wallet/types";
 
 /**
  * Encryption adapter interface for platform abstraction
@@ -63,24 +29,6 @@ export interface EncryptedData {
   iv: string;
   /** Base64-encoded salt for key derivation */
   salt: string;
-}
-
-/**
- * Configuration for passkey service
- */
-export interface PasskeyConfig {
-  /** Relying party ID (usually domain) */
-  rpId: string;
-  /** Relying party name (displayed to user) */
-  rpName: string;
-  /** Timeout for WebAuthn operations in milliseconds */
-  timeout?: number;
-  /** Authenticator attachment preference */
-  authenticatorAttachment?: "platform" | "cross-platform";
-  /** Whether to require resident key */
-  residentKey?: "required" | "preferred" | "discouraged";
-  /** User verification requirement */
-  userVerification?: "required" | "preferred" | "discouraged";
 }
 
 /**
@@ -108,18 +56,6 @@ export interface StoredSession {
 }
 
 /**
- * User information for registration
- */
-export interface UserInfo {
-  /** User ID (should be unique, opaque identifier) */
-  id: string;
-  /** User name (e.g., email) */
-  name: string;
-  /** Display name */
-  displayName: string;
-}
-
-/**
  * Events emitted by PasskeyService
  */
 export type PasskeyServiceEvent =
@@ -134,10 +70,4 @@ export type PasskeyServiceEvent =
 export type PasskeyEventListener = (event: PasskeyServiceEvent) => void;
 
 // Re-export types from @aa-wallet/types for convenience
-export type {
-  PasskeyCredential,
-  PasskeyRegistrationOptions,
-  PasskeyAuthenticationOptions,
-  PasskeySignature,
-  SessionState,
-};
+export type { PasskeyCredential, SessionState };

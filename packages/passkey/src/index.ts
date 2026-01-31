@@ -1,26 +1,22 @@
 /**
  * @aa-wallet/passkey
  *
- * Passkey (WebAuthn) authentication package for AA Wallet
+ * Credential storage and session management for AA Wallet.
+ *
+ * Note: WebAuthn operations (registration/authentication) should be performed
+ * using viem's account-abstraction utilities:
+ * - createWebAuthnCredential() for registration
+ * - toWebAuthnAccount() for creating a signer
+ *
+ * This package provides:
+ * - Credential storage (encrypted)
+ * - Session management (timeouts, activity tracking)
+ * - Event system for UI updates
  */
 
 // Main service
 export { PasskeyService } from "./passkey-service";
 export type { PasskeyServiceConfig } from "./passkey-service";
-
-// WebAuthn functions
-export {
-  buildRegistrationOptions,
-  startRegistration,
-  registerPasskey,
-  buildAuthenticationOptions,
-  startAuthentication,
-  authenticatePasskey,
-  isWebAuthnSupported,
-  isPlatformAuthenticatorAvailable,
-  isUserCancellation,
-  isCredentialExistsError,
-} from "./webauthn";
 
 // Storage
 export {
@@ -38,21 +34,13 @@ export type { SessionExpirationCallback } from "./session";
 
 // Types
 export type {
-  RegistrationResponse,
-  AuthenticationResponse,
-  WebAuthnAdapter,
   CryptoAdapter,
   EncryptedData,
-  PasskeyConfig,
   SessionConfig,
   StoredSession,
-  UserInfo,
   PasskeyServiceEvent,
   PasskeyEventListener,
   // Re-exported from @aa-wallet/types
   PasskeyCredential,
-  PasskeyRegistrationOptions,
-  PasskeyAuthenticationOptions,
-  PasskeySignature,
   SessionState,
 } from "./types";
