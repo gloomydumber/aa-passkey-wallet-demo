@@ -22,6 +22,8 @@
   },
   "dependencies": {
     "@aa-wallet/types": "*",
-    "@aa-wallet/utils": "*"
+    "@aa-wallet/utils": "*",
+    "permissionless": "^0.3.4",
+    "viem": "^2.45.1"
   }
 }

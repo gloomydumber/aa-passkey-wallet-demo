@@ -18,3 +18,6 @@ export * from "./transaction";
 
 // Passkey types
 export * from "./passkey";
+
+// Smart Account Port (interface for smart account implementations)
+export * from "./smart-account-port";
