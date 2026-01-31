@@ -10,10 +10,24 @@ export * from "./networks";
 // Smart account adapters
 export * from "./adapters";
 
+// Balance queries
+export * from "./balance";
+
+// UserOperation building and submission
+export * from "./userop";
+
 // Re-export types for convenience
 export type {
   SmartAccountPort,
   SmartAccountInstance,
   CreateSmartAccountOptions,
   P256Credential,
+  Token,
+  TokenBalance,
+  NativeBalance,
+  UserOperationRequest,
+  UserOperationGas,
+  UserOperationResult,
+  Transaction,
+  TransactionStatus,
 } from "@aa-wallet/types";
