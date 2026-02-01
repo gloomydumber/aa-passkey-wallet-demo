@@ -47,13 +47,14 @@ export function WalletProvider({ children }: WalletProviderProps) {
           setCredential(event.credential);
           break;
 
-        case "credential_removed":
+        case "credential_removed": {
           // Check if the removed credential was active
           const currentCredential = useWalletStore.getState().credential;
           if (currentCredential?.id === event.credentialId) {
             setCredential(null);
           }
           break;
+        }
       }
     },
     [setSession, setCredential]

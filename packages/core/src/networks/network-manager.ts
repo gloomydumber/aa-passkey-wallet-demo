@@ -4,7 +4,7 @@
  */
 
 import type { Network, NetworkState } from "@aa-wallet/types";
-import { supportedNetworks, defaultNetwork, getNetworkByChainId } from "./supported-networks";
+import { supportedNetworks, defaultNetwork } from "./supported-networks";
 
 export type NetworkChangeListener = (network: Network) => void;
 

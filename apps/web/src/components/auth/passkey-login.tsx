@@ -68,7 +68,8 @@ export function PasskeyLogin({ credential, onSuccess, onError }: PasskeyLoginPro
       await authenticateWithWebAuthn(credential.id);
 
       // 2. Create WebAuthn account from stored credential
-      const webAuthnAccount = toWebAuthnAccount({
+      // Note: webAuthnAccount will be used for transaction signing in Send screen
+      const _webAuthnAccount = toWebAuthnAccount({
         credential: {
           id: credential.id,
           publicKey: credential.publicKey as `0x${string}`,

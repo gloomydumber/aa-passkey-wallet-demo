@@ -11,7 +11,6 @@ import type {
   SmartAccountPort,
   SmartAccountInstance,
   CreateSmartAccountOptions,
-  P256Credential,
   Address,
 } from "@aa-wallet/types";
 
