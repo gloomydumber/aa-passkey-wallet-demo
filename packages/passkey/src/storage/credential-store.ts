@@ -118,4 +118,30 @@ export class CredentialStore {
     await this.storage.remove(CREDENTIALS_KEY);
     await this.clearActiveCredential();
   }
+
+  /**
+   * Update the lastUsedAt timestamp for a credential
+   */
+  async updateLastUsedAt(id: string): Promise<void> {
+    const credentials = await this.getAllCredentials();
+    const credential = credentials.find((c) => c.id === id);
+
+    if (credential) {
+      credential.lastUsedAt = Date.now();
+      await this.storage.set(CREDENTIALS_KEY, credentials);
+    }
+  }
+
+  /**
+   * Get credentials sorted by last used (most recent first)
+   * Falls back to createdAt if lastUsedAt is not set
+   */
+  async getCredentialsSortedByLastUsed(): Promise<PasskeyCredential[]> {
+    const credentials = await this.getAllCredentials();
+    return credentials.sort((a, b) => {
+      const aTime = a.lastUsedAt ?? a.createdAt;
+      const bTime = b.lastUsedAt ?? b.createdAt;
+      return bTime - aTime; // Descending order (most recent first)
+    });
+  }
 }

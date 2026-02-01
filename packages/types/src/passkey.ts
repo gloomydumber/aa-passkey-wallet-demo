@@ -13,6 +13,8 @@ export interface PasskeyCredential {
   algorithm: number;
   /** Credential creation timestamp */
   createdAt: number;
+  /** Last used timestamp (for sorting in credential selector) */
+  lastUsedAt?: number;
   /** User-friendly name for the credential */
   name?: string;
   /** Authenticator AAGUID */

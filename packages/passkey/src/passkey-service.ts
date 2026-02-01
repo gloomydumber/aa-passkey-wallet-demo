@@ -113,6 +113,14 @@ export class PasskeyService {
   }
 
   /**
+   * Get credentials sorted by last used (most recent first)
+   * Falls back to createdAt if lastUsedAt is not set
+   */
+  async getCredentialsSortedByLastUsed(): Promise<PasskeyCredential[]> {
+    return this.credentialStore.getCredentialsSortedByLastUsed();
+  }
+
+  /**
    * Get the active credential
    */
   async getActiveCredential(): Promise<PasskeyCredential | null> {
@@ -160,6 +168,9 @@ export class PasskeyService {
   async startSession(credentialId: string): Promise<SessionState> {
     // Set the authenticated credential as active
     await this.credentialStore.setActiveCredential(credentialId);
+
+    // Update last used timestamp for credential sorting
+    await this.credentialStore.updateLastUsedAt(credentialId);
 
     // Start session
     const session = await this.sessionManager.startSession(credentialId);

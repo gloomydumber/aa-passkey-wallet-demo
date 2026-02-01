@@ -88,8 +88,8 @@ export function PasskeyRegister({ onSuccess, onError }: PasskeyRegisterProps) {
 
   return (
     <div className="space-y-4">
-      <div className="space-y-2">
-        <label htmlFor="wallet-name" className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+      <div>
+        <label htmlFor="wallet-name" className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
           Wallet Name
         </label>
         <Input

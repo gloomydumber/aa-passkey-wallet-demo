@@ -106,16 +106,7 @@ export function PasskeyLogin({ credential, onSuccess, onError }: PasskeyLoginPro
   };
 
   return (
-    <div className="space-y-4">
-      <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800">
-        <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
-          {credential.name || "My Wallet"}
-        </p>
-        <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-          Created {new Date(credential.createdAt).toLocaleDateString()}
-        </p>
-      </div>
-
+    <div className="space-y-3">
       {error && (
         <p className="text-sm text-red-500 dark:text-red-400">{error}</p>
       )}

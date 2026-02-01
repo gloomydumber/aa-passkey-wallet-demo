@@ -4,7 +4,7 @@
  * Login Page
  *
  * Entry point for the wallet. Shows registration for new users
- * and login for returning users.
+ * and login for returning users with credential selection.
  */
 
 import { useState, useEffect } from "react";
@@ -13,6 +13,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Button } from "@/components/ui/button";
 import { PasskeyRegister } from "@/components/auth/passkey-register";
 import { PasskeyLogin } from "@/components/auth/passkey-login";
+import { CredentialSelector } from "@/components/auth/credential-selector";
 import { useWallet } from "@/providers/wallet-provider";
 import { useWalletStore, selectIsAuthenticated } from "@/stores/wallet-store";
 import { getPasskeyService } from "@/lib/wallet-client";
@@ -27,7 +28,8 @@ export default function LoginPage() {
   const isAuthenticated = useWalletStore(selectIsAuthenticated);
 
   const [mode, setMode] = useState<AuthMode>("register");
-  const [existingCredential, setExistingCredential] = useState<PasskeyCredential | null>(null);
+  const [credentials, setCredentials] = useState<PasskeyCredential[]>([]);
+  const [selectedCredential, setSelectedCredential] = useState<PasskeyCredential | null>(null);
   const [isCheckingCredentials, setIsCheckingCredentials] = useState(true);
 
   // Check for existing credentials on mount
@@ -37,11 +39,13 @@ export default function LoginPage() {
     async function checkCredentials() {
       try {
         const passkeyService = getPasskeyService();
-        const credentials = await passkeyService.getCredentials();
+        // Get credentials sorted by last used (most recent first)
+        const sortedCredentials = await passkeyService.getCredentialsSortedByLastUsed();
 
-        if (credentials.length > 0) {
+        if (sortedCredentials.length > 0) {
           // User has existing credentials, show login
-          setExistingCredential(credentials[0]); // Use the first credential
+          setCredentials(sortedCredentials);
+          setSelectedCredential(sortedCredentials[0]); // Select most recent by default
           setMode("login");
         } else {
           // New user, show registration
@@ -66,6 +70,10 @@ export default function LoginPage() {
 
   const handleSuccess = () => {
     router.push("/dashboard");
+  };
+
+  const handleCredentialSelect = (credential: PasskeyCredential) => {
+    setSelectedCredential(credential);
   };
 
   // Show loading state
@@ -100,13 +108,28 @@ export default function LoginPage() {
         <CardContent>
           {mode === "register" ? (
             <PasskeyRegister onSuccess={handleSuccess} />
-          ) : existingCredential ? (
-            <PasskeyLogin credential={existingCredential} onSuccess={handleSuccess} />
-          ) : null}
+          ) : (
+            <div className="space-y-4">
+              {/* Credential selector for multiple accounts */}
+              <CredentialSelector
+                credentials={credentials}
+                selectedId={selectedCredential?.id ?? null}
+                onSelect={handleCredentialSelect}
+              />
+
+              {/* Login button */}
+              {selectedCredential && (
+                <PasskeyLogin
+                  credential={selectedCredential}
+                  onSuccess={handleSuccess}
+                />
+              )}
+            </div>
+          )}
 
           <div className="mt-6 text-center">
             {mode === "register" ? (
-              existingCredential && (
+              credentials.length > 0 && (
                 <Button
                   variant="ghost"
                   onClick={() => setMode("login")}
