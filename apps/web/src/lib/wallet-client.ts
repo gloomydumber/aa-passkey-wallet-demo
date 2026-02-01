@@ -10,9 +10,11 @@ import {
   CoinbaseAccountAdapter,
   BalanceService,
   createPublicClientForNetwork,
+  createBundlerClientForNetwork,
   sepoliaNetwork,
   arbitrumSepoliaNetwork,
 } from "@aa-wallet/core";
+import type { SmartAccount } from "viem/account-abstraction";
 import { PasskeyService } from "@aa-wallet/passkey";
 import type { Network, StoragePort } from "@aa-wallet/types";
 import { getStorageAdapter } from "./storage-adapter";
@@ -143,6 +145,19 @@ export function createBalanceService(network: Network): BalanceService {
     client,
     nativeCurrency: configuredNetwork.nativeCurrency,
   });
+}
+
+/**
+ * Create a bundler client for the given network and smart account
+ * Used for submitting UserOperations
+ */
+export function createBundlerClient(network: Network, viemAccount: SmartAccount) {
+  const configuredNetwork = getConfiguredNetwork(network);
+  const publicClient = createPublicClientForNetwork({ network: configuredNetwork });
+  return createBundlerClientForNetwork(
+    { network: configuredNetwork, publicClient },
+    viemAccount
+  );
 }
 
 // ============================================

@@ -123,6 +123,10 @@ export class CoinbaseAccountAdapter implements SmartAccountPort {
       ): Promise<`0x${string}`> {
         return smartAccount.encodeCalls(calls);
       },
+
+      getViemAccount() {
+        return smartAccount;
+      },
     };
   }
 }

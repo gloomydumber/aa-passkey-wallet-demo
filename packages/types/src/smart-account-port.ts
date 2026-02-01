@@ -57,6 +57,11 @@ export interface SmartAccountInstance {
       data: `0x${string}`;
     }>
   ): Promise<`0x${string}`>;
+  /**
+   * Get the underlying viem smart account for bundler client usage
+   * Returns the native viem SmartAccount type
+   */
+  getViemAccount(): unknown;
 }
 
 /**
