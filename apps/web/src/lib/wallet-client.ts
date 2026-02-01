@@ -147,17 +147,39 @@ export function createBalanceService(network: Network): BalanceService {
   });
 }
 
+export interface CreateBundlerClientOptions {
+  /** Enable paymaster for sponsored transactions (testnet only) */
+  sponsored?: boolean;
+}
+
 /**
  * Create a bundler client for the given network and smart account
  * Used for submitting UserOperations
+ *
+ * @param network - The network to use
+ * @param viemAccount - The viem smart account
+ * @param options - Optional settings (e.g., sponsored transactions)
  */
-export function createBundlerClient(network: Network, viemAccount: SmartAccount) {
+export function createBundlerClient(
+  network: Network,
+  viemAccount: SmartAccount,
+  options?: CreateBundlerClientOptions
+) {
   const configuredNetwork = getConfiguredNetwork(network);
   const publicClient = createPublicClientForNetwork({ network: configuredNetwork });
   return createBundlerClientForNetwork(
     { network: configuredNetwork, publicClient },
-    viemAccount
+    viemAccount,
+    { sponsored: options?.sponsored }
   );
+}
+
+/**
+ * Check if paymaster is available for the given network
+ */
+export function isPaymasterAvailable(network: Network): boolean {
+  const configuredNetwork = getConfiguredNetwork(network);
+  return !!configuredNetwork.paymasterUrl && configuredNetwork.isTestnet;
 }
 
 // ============================================

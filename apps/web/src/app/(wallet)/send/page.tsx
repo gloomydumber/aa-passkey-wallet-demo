@@ -4,22 +4,34 @@
  * Send Page
  *
  * Full implementation of ETH transfer flow with UserOperations.
+ * Includes activation options for accounts without funds.
  */
 
 import { useRouter } from "next/navigation";
-import { useCallback } from "react";
+import { useCallback, useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { SendForm, ConfirmSheet, TransactionStatus } from "@/components/send";
+import {
+  SendForm,
+  ConfirmSheet,
+  TransactionStatus,
+  ActivationOptions,
+  type ActivationMethod,
+} from "@/components/send";
 import { ArrowLeft } from "lucide-react";
 import { useWalletStore } from "@/stores/wallet-store";
 import { useNetworkStore } from "@/stores/network-store";
 import { useBalance, useSendTransaction } from "@/hooks";
+import { isPaymasterAvailable } from "@/lib/wallet-client";
 import type { Address } from "@aa-wallet/types";
 
 export default function SendPage() {
   const router = useRouter();
   const { account, accountAddress } = useWalletStore();
   const { activeNetwork } = useNetworkStore();
+
+  // Activation state
+  const [useSponsored, setUseSponsored] = useState(false);
+  const [activationMethod, setActivationMethod] = useState<ActivationMethod | null>(null);
 
   // Fetch balance
   const { balance, isLoading: isBalanceLoading } = useBalance({
@@ -41,7 +53,33 @@ export default function SendPage() {
   } = useSendTransaction({
     account,
     network: activeNetwork,
+    sponsored: useSponsored,
   });
+
+  // Check if account needs activation
+  // Account needs activation if balance is zero (or too low for gas)
+  const needsActivation = useMemo(() => {
+    if (isBalanceLoading) return false;
+    if (!balance) return true;
+    // Consider account needs activation if balance is less than 0.0001 ETH
+    const balanceWei = BigInt(balance.balance);
+    const minBalance = BigInt("100000000000000"); // 0.0001 ETH in wei
+    return balanceWei < minBalance;
+  }, [balance, isBalanceLoading]);
+
+  // Check if paymaster is available for current network
+  const paymasterAvailable = useMemo(() => {
+    return isPaymasterAvailable(activeNetwork);
+  }, [activeNetwork]);
+
+  // Handle activation method selection
+  const handleActivationSelect = useCallback((method: ActivationMethod) => {
+    if (method === "paymaster") {
+      setActivationMethod(method);
+      setUseSponsored(true);
+    }
+    // Other methods (onramp, import) are coming soon - do nothing
+  }, []);
 
   // Handle form submission (prepare transaction)
   const handleFormSubmit = useCallback(
@@ -64,6 +102,8 @@ export default function SendPage() {
   // Handle done/go back actions
   const handleDone = useCallback(() => {
     reset();
+    setUseSponsored(false);
+    setActivationMethod(null);
     router.push("/dashboard");
   }, [reset, router]);
 
@@ -72,6 +112,12 @@ export default function SendPage() {
     // Reset and start fresh
     reset();
   }, [reset]);
+
+  // Handle back from activation
+  const handleBackFromActivation = useCallback(() => {
+    setUseSponsored(false);
+    setActivationMethod(null);
+  }, []);
 
   // Show transaction status for pending/success/failed states
   if (status === "pending" || status === "success" || status === "failed") {
@@ -99,13 +145,43 @@ export default function SendPage() {
     );
   }
 
+  // Show activation options if account needs activation and user hasn't selected a method
+  if (needsActivation && !useSponsored) {
+    return (
+      <div className="mx-auto max-w-lg p-4">
+        <header className="mb-6 flex items-center gap-4">
+          <Button variant="ghost" size="sm" onClick={() => router.back()}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-50">Send</h1>
+        </header>
+
+        <ActivationOptions
+          isPaymasterAvailable={paymasterAvailable}
+          activeMethod={activationMethod}
+          isActivating={false}
+          onSelect={handleActivationSelect}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-lg p-4">
       <header className="mb-6 flex items-center gap-4">
-        <Button variant="ghost" size="sm" onClick={() => router.back()}>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={needsActivation ? handleBackFromActivation : () => router.back()}
+        >
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-50">Send</h1>
+        {useSponsored && (
+          <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
+            Sponsored
+          </span>
+        )}
       </header>
 
       {/* Send Form */}

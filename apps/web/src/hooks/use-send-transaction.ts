@@ -47,6 +47,8 @@ export interface TransactionResult {
 interface UseSendTransactionOptions {
   account: SmartAccountInstance | null;
   network: Network;
+  /** Enable sponsored transactions via paymaster */
+  sponsored?: boolean;
 }
 
 interface UseSendTransactionResult {
@@ -67,6 +69,7 @@ interface UseSendTransactionResult {
 export function useSendTransaction({
   account,
   network,
+  sponsored = false,
 }: UseSendTransactionOptions): UseSendTransactionResult {
   const [status, setStatus] = useState<SendStatus>("idle");
   const [transaction, setTransaction] = useState<TransactionDetails | null>(null);
@@ -98,7 +101,7 @@ export function useSendTransaction({
 
         // Get the viem account for bundler client
         const viemAccount = account.getViemAccount() as SmartAccount;
-        const bundlerClient = createBundlerClient(network, viemAccount);
+        const bundlerClient = createBundlerClient(network, viemAccount, { sponsored });
 
         // Check if this is the first transaction (account not deployed)
         const adapter = createSmartAccountAdapter(network);
@@ -148,7 +151,7 @@ export function useSendTransaction({
         setStatus("failed");
       }
     },
-    [account, network]
+    [account, network, sponsored]
   );
 
   /**
@@ -169,7 +172,7 @@ export function useSendTransaction({
 
       // Get the viem account for bundler client
       const viemAccount = account.getViemAccount() as SmartAccount;
-      const bundlerClient = createBundlerClient(network, viemAccount);
+      const bundlerClient = createBundlerClient(network, viemAccount, { sponsored });
 
       // Send the user operation (this triggers WebAuthn signing)
       const userOpHash = await bundlerClient.sendUserOperation({
@@ -214,7 +217,7 @@ export function useSendTransaction({
       }
       setStatus("failed");
     }
-  }, [account, network, transaction]);
+  }, [account, network, transaction, sponsored]);
 
   /**
    * Reset to idle state
