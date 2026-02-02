@@ -3,25 +3,19 @@
 /**
  * Send Page
  *
- * Full implementation of ETH transfer flow with UserOperations.
- * Includes activation options for accounts without funds.
+ * ETH transfer flow with UserOperations.
+ * Shows message if account has no balance.
  */
 
 import { useRouter } from "next/navigation";
-import { useCallback, useState, useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  SendForm,
-  ConfirmSheet,
-  TransactionStatus,
-  ActivationOptions,
-  type ActivationMethod,
-} from "@/components/send";
-import { ArrowLeft } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { SendForm, ConfirmSheet, TransactionStatus } from "@/components/send";
+import { ArrowLeft, Wallet } from "lucide-react";
 import { useWalletStore } from "@/stores/wallet-store";
 import { useNetworkStore } from "@/stores/network-store";
 import { useBalance, useSendTransaction } from "@/hooks";
-import { isPaymasterAvailable } from "@/lib/wallet-client";
 import type { Address } from "@aa-wallet/types";
 
 export default function SendPage() {
@@ -29,17 +23,13 @@ export default function SendPage() {
   const { account, accountAddress } = useWalletStore();
   const { activeNetwork } = useNetworkStore();
 
-  // Activation state
-  const [useSponsored, setUseSponsored] = useState(false);
-  const [activationMethod, setActivationMethod] = useState<ActivationMethod | null>(null);
-
   // Fetch balance
   const { balance, isLoading: isBalanceLoading } = useBalance({
     address: accountAddress,
-    refetchInterval: 15000, // Refresh every 15 seconds
+    refetchInterval: 15000,
   });
 
-  // Transaction hook
+  // Transaction hook (no sponsorship - user pays gas)
   const {
     status,
     transaction,
@@ -53,35 +43,17 @@ export default function SendPage() {
   } = useSendTransaction({
     account,
     network: activeNetwork,
-    sponsored: useSponsored,
   });
 
-  // Check if account needs activation
-  // Account needs activation if balance is zero (or too low for gas)
-  const needsActivation = useMemo(() => {
-    if (isBalanceLoading) return false;
-    if (!balance) return true;
-    // Consider account needs activation if balance is less than 0.0001 ETH
+  // Check if account has sufficient balance
+  const hasBalance = useMemo(() => {
+    if (!balance) return false;
     const balanceWei = BigInt(balance.balance);
-    const minBalance = BigInt("100000000000000"); // 0.0001 ETH in wei
-    return balanceWei < minBalance;
-  }, [balance, isBalanceLoading]);
+    const minBalance = BigInt("100000000000000"); // 0.0001 ETH
+    return balanceWei >= minBalance;
+  }, [balance]);
 
-  // Check if paymaster is available for current network
-  const paymasterAvailable = useMemo(() => {
-    return isPaymasterAvailable(activeNetwork);
-  }, [activeNetwork]);
-
-  // Handle activation method selection
-  const handleActivationSelect = useCallback((method: ActivationMethod) => {
-    if (method === "paymaster") {
-      setActivationMethod(method);
-      setUseSponsored(true);
-    }
-    // Other methods (onramp, import) are coming soon - do nothing
-  }, []);
-
-  // Handle form submission (prepare transaction)
+  // Handle form submission
   const handleFormSubmit = useCallback(
     (to: Address, amount: string) => {
       prepare(to, amount);
@@ -89,35 +61,22 @@ export default function SendPage() {
     [prepare]
   );
 
-  // Handle confirm button click
   const handleConfirm = useCallback(() => {
     confirm();
   }, [confirm]);
 
-  // Handle cancel confirmation
   const handleCancelConfirm = useCallback(() => {
     reset();
   }, [reset]);
 
-  // Handle done/go back actions
   const handleDone = useCallback(() => {
     reset();
-    setUseSponsored(false);
-    setActivationMethod(null);
     router.push("/dashboard");
   }, [reset, router]);
 
-  // Handle retry
   const handleRetry = useCallback(() => {
-    // Reset and start fresh
     reset();
   }, [reset]);
-
-  // Handle back from activation
-  const handleBackFromActivation = useCallback(() => {
-    setUseSponsored(false);
-    setActivationMethod(null);
-  }, []);
 
   // Show transaction status for pending/success/failed states
   if (status === "pending" || status === "success" || status === "failed") {
@@ -145,8 +104,8 @@ export default function SendPage() {
     );
   }
 
-  // Show activation options if account needs activation and user hasn't selected a method
-  if (needsActivation && !useSponsored) {
+  // Show loading while checking balance
+  if (isBalanceLoading) {
     return (
       <div className="mx-auto max-w-lg p-4">
         <header className="mb-6 flex items-center gap-4">
@@ -156,12 +115,44 @@ export default function SendPage() {
           <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-50">Send</h1>
         </header>
 
-        <ActivationOptions
-          isPaymasterAvailable={paymasterAvailable}
-          activeMethod={activationMethod}
-          isActivating={false}
-          onSelect={handleActivationSelect}
-        />
+        <div className="flex flex-col items-center justify-center py-12">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-zinc-200 border-t-zinc-600 dark:border-zinc-700 dark:border-t-zinc-300" />
+        </div>
+      </div>
+    );
+  }
+
+  // Show "no balance" message if account has insufficient funds
+  if (!hasBalance) {
+    return (
+      <div className="mx-auto max-w-lg p-4">
+        <header className="mb-6 flex items-center gap-4">
+          <Button variant="ghost" size="sm" onClick={() => router.back()}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-50">Send</h1>
+        </header>
+
+        <Card>
+          <CardContent className="flex flex-col items-center py-8">
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
+              <Wallet className="h-8 w-8 text-zinc-400" />
+            </div>
+            <h2 className="mb-2 text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+              No Balance
+            </h2>
+            <p className="mb-6 text-center text-sm text-zinc-500 dark:text-zinc-400">
+              You need {activeNetwork.nativeCurrency.symbol} to send transactions.
+              <br />
+              Share your address to receive funds first.
+            </p>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <Button variant="outline" onClick={() => router.push("/dashboard")}>
+                View Address
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -169,30 +160,19 @@ export default function SendPage() {
   return (
     <div className="mx-auto max-w-lg p-4">
       <header className="mb-6 flex items-center gap-4">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={needsActivation ? handleBackFromActivation : () => router.back()}
-        >
+        <Button variant="ghost" size="sm" onClick={() => router.back()}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-50">Send</h1>
-        {useSponsored && (
-          <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
-            Sponsored
-          </span>
-        )}
       </header>
 
-      {/* Send Form */}
       <SendForm
         balance={balance}
-        isLoading={status === "estimating" || isBalanceLoading}
+        isLoading={status === "estimating"}
         gasEstimate={gasEstimate}
         onSubmit={handleFormSubmit}
       />
 
-      {/* Confirmation Sheet */}
       {status === "confirming" && transaction && gasEstimate && (
         <ConfirmSheet
           transaction={transaction}
@@ -205,7 +185,6 @@ export default function SendPage() {
         />
       )}
 
-      {/* Signing state */}
       {status === "signing" && transaction && gasEstimate && (
         <ConfirmSheet
           transaction={transaction}

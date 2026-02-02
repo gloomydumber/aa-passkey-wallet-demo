@@ -6,9 +6,11 @@
  * Initializes wallet services and manages authentication state.
  */
 
-import { createContext, useContext, useEffect, useCallback, type ReactNode } from "react";
-import { getPasskeyService, getNetworkManager, cleanupWalletClient } from "@/lib/wallet-client";
+import { createContext, useContext, useEffect, useCallback, useRef, type ReactNode } from "react";
+import { usePathname } from "next/navigation";
+import { getPasskeyService, getNetworkManager, cleanupWalletClient, createSmartAccountAdapter } from "@/lib/wallet-client";
 import { useWalletStore } from "@/stores/wallet-store";
+import { useNetworkStore } from "@/stores/network-store";
 import type { PasskeyServiceEvent } from "@aa-wallet/passkey";
 
 interface WalletContextValue {
@@ -22,7 +24,46 @@ interface WalletProviderProps {
 }
 
 export function WalletProvider({ children }: WalletProviderProps) {
-  const { isInitialized, setInitialized, setSession, setCredential, reset } = useWalletStore();
+  const { isInitialized, setInitialized, setSession, setCredential, setAccount, reset } = useWalletStore();
+  const { activeNetwork } = useNetworkStore();
+  const pathname = usePathname();
+  const lastActivityRef = useRef<number>(Date.now());
+
+  // Record activity to reset inactivity timer
+  const recordActivity = useCallback(() => {
+    // Throttle to avoid excessive calls (max once per second)
+    const now = Date.now();
+    if (now - lastActivityRef.current < 1000) return;
+    lastActivityRef.current = now;
+
+    getPasskeyService().recordActivity().catch((err) => {
+      console.error("Failed to record activity:", err);
+    });
+  }, []);
+
+  // Record activity on route changes
+  useEffect(() => {
+    if (isInitialized) {
+      recordActivity();
+    }
+  }, [pathname, isInitialized, recordActivity]);
+
+  // Record activity on user interactions (clicks, keypresses, touch)
+  useEffect(() => {
+    if (!isInitialized) return;
+
+    const events = ["click", "keydown", "touchstart", "scroll"];
+
+    events.forEach((event) => {
+      window.addEventListener(event, recordActivity, { passive: true });
+    });
+
+    return () => {
+      events.forEach((event) => {
+        window.removeEventListener(event, recordActivity);
+      });
+    };
+  }, [isInitialized, recordActivity]);
 
   // Handle passkey service events
   const handlePasskeyEvent = useCallback(
@@ -83,6 +124,20 @@ export function WalletProvider({ children }: WalletProviderProps) {
           const activeCredential = await passkeyService.getActiveCredential();
           if (activeCredential) {
             setCredential(activeCredential);
+
+            // Restore smart account from credential
+            try {
+              const adapter = createSmartAccountAdapter(activeNetwork);
+              const smartAccount = await adapter.createAccount({
+                owner: {
+                  id: activeCredential.id,
+                  publicKey: activeCredential.publicKey as `0x${string}`,
+                },
+              });
+              setAccount(smartAccount, smartAccount.address);
+            } catch (err) {
+              console.error("Failed to restore smart account:", err);
+            }
           }
         }
 
