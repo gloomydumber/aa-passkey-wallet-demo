@@ -31,6 +31,7 @@ export default function LoginPage() {
   const [credentials, setCredentials] = useState<PasskeyCredential[]>([]);
   const [selectedCredential, setSelectedCredential] = useState<PasskeyCredential | null>(null);
   const [isCheckingCredentials, setIsCheckingCredentials] = useState(true);
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   // Check for existing credentials on mount
   useEffect(() => {
@@ -61,14 +62,23 @@ export default function LoginPage() {
     checkCredentials();
   }, [isReady]);
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated (only on initial load, not after login/register)
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && !isCheckingCredentials && !isRedirecting) {
+      // User is already logged in, redirect to dashboard
       router.push("/dashboard");
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, isCheckingCredentials, isRedirecting, router]);
 
-  const handleSuccess = () => {
+  const handleRegisterSuccess = () => {
+    // New account - go to activate page for easy deploying
+    setIsRedirecting(true);
+    router.push("/activate");
+  };
+
+  const handleLoginSuccess = () => {
+    // Existing account - go to dashboard (layout will redirect to /activate if not deployed)
+    setIsRedirecting(true);
     router.push("/dashboard");
   };
 
@@ -107,7 +117,7 @@ export default function LoginPage() {
 
         <CardContent>
           {mode === "register" ? (
-            <PasskeyRegister onSuccess={handleSuccess} />
+            <PasskeyRegister onSuccess={handleRegisterSuccess} />
           ) : (
             <div className="space-y-4">
               {/* Credential selector for multiple accounts */}
@@ -121,7 +131,7 @@ export default function LoginPage() {
               {selectedCredential && (
                 <PasskeyLogin
                   credential={selectedCredential}
-                  onSuccess={handleSuccess}
+                  onSuccess={handleLoginSuccess}
                 />
               )}
             </div>
