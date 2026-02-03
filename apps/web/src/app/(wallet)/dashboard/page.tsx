@@ -16,7 +16,7 @@ import { useWalletStore } from "@/stores/wallet-store";
 import { useNetworkStore } from "@/stores/network-store";
 import { useBalance, useAccountStatus } from "@/hooks";
 import { getPasskeyService } from "@/lib/wallet-client";
-import { Send, History, Settings, LogOut, Rocket } from "lucide-react";
+import { Send, History, Settings, LogOut, Rocket, Wallet } from "lucide-react";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -41,12 +41,6 @@ export default function DashboardPage() {
     }
   };
 
-  const handleActivate = () => {
-    // Clear skip flag and go to activate page
-    sessionStorage.removeItem("activation_skipped");
-    router.push("/activate");
-  };
-
   return (
     <div className="mx-auto max-w-lg p-4">
       {/* Header */}
@@ -64,18 +58,28 @@ export default function DashboardPage() {
             address={accountAddress}
             explorerUrl={activeNetwork.explorerUrl}
           />
-          {/* Show activation link if not deployed */}
+          {/* Show fund/deploy buttons if not deployed */}
           {isDeployed === false && (
-            <button
-              onClick={handleActivate}
-              className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-700 hover:bg-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:hover:bg-amber-900/30"
-            >
-              <Rocket className="h-4 w-4" />
-              Account not deployed.{" "}
-              <span className="font-medium">
-                Activate now
-              </span>
-            </button>
+            <div className="mt-2 flex gap-2">
+              <Button
+                variant="secondary"
+                size="sm"
+                className="flex-1"
+                onClick={() => router.push("/fund")}
+              >
+                <Wallet className="mr-1 h-4 w-4" />
+                Fund Wallet
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                className="flex-1"
+                onClick={() => router.push("/deploy")}
+              >
+                <Rocket className="mr-1 h-4 w-4" />
+                Deploy Account
+              </Button>
+            </div>
           )}
         </div>
       )}

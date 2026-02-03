@@ -4,7 +4,8 @@
  */
 
 import { http, type PublicClient } from "viem";
-import { createBundlerClient, createPaymasterClient, type SmartAccount } from "viem/account-abstraction";
+import { createBundlerClient, type SmartAccount } from "viem/account-abstraction";
+import { createPimlicoClient } from "permissionless/clients/pimlico";
 import type { Network } from "@aa-wallet/types";
 
 export interface BundlerClientConfig {
@@ -29,10 +30,15 @@ export function createBundlerClientForNetwork<TSmartAccount extends SmartAccount
   const { network, publicClient } = config;
   const { sponsored = false } = options ?? {};
 
-  // Create paymaster client if sponsored and paymaster URL is available
-  const paymasterClient = sponsored && network.paymasterUrl
-    ? createPaymasterClient({
+  // For sponsored transactions, use Pimlico's paymaster client
+  // This handles Pimlico's specific paymaster API (pm_sponsorUserOperation)
+  const pimlicoClient = sponsored && network.paymasterUrl
+    ? createPimlicoClient({
         transport: http(network.paymasterUrl),
+        entryPoint: {
+          address: "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789" as const, // EntryPoint v0.6
+          version: "0.6" as const,
+        },
       })
     : undefined;
 
@@ -40,6 +46,6 @@ export function createBundlerClientForNetwork<TSmartAccount extends SmartAccount
     client: publicClient,
     transport: http(network.bundlerUrl),
     account,
-    paymaster: paymasterClient,
+    paymaster: pimlicoClient,
   });
 }

@@ -18,10 +18,28 @@ interface BalanceDisplayProps {
   networkName?: string;
 }
 
+/**
+ * Truncate balance to max decimal places for display
+ * Removes trailing zeros after truncation
+ */
+function formatBalanceDisplay(value: string, maxDecimals: number = 6): string {
+  const num = parseFloat(value);
+  if (isNaN(num)) return value;
+
+  // For very small numbers, show more precision
+  if (num > 0 && num < 0.000001) {
+    return num.toExponential(2);
+  }
+
+  // Truncate to maxDecimals and remove trailing zeros
+  const truncated = num.toFixed(maxDecimals);
+  return parseFloat(truncated).toString();
+}
+
 export function BalanceDisplay({ balance, isLoading, onRefresh, networkName }: BalanceDisplayProps) {
-  // NativeBalance already has formattedBalance pre-computed
+  // NativeBalance has formattedBalance pre-computed, but we truncate for display
   const displayBalance = balance
-    ? `${balance.formattedBalance} ${balance.symbol}`
+    ? `${formatBalanceDisplay(balance.formattedBalance)} ${balance.symbol}`
     : "0 ETH";
 
   return (

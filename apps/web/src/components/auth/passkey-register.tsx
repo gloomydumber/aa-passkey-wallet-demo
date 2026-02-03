@@ -29,7 +29,9 @@ export function PasskeyRegister({ onSuccess, onError }: PasskeyRegisterProps) {
   const { activeNetwork } = useNetworkStore();
 
   const handleRegister = async () => {
-    if (!walletName.trim()) {
+    const trimmedName = walletName.trim();
+
+    if (!trimmedName) {
       setError("Please enter a wallet name");
       return;
     }
@@ -39,20 +41,33 @@ export function PasskeyRegister({ onSuccess, onError }: PasskeyRegisterProps) {
     setError(null);
 
     try {
-      // 1. Create WebAuthn credential using viem
+      // 1. Check for duplicate wallet name
+      const passkeyService = getPasskeyService();
+      const existingCredentials = await passkeyService.getCredentials();
+      const isDuplicate = existingCredentials.some(
+        (cred) => cred.name?.toLowerCase() === trimmedName.toLowerCase()
+      );
+
+      if (isDuplicate) {
+        setError("A wallet with this name already exists. Please choose a different name.");
+        setIsLoading(false);
+        setLoading(false);
+        return;
+      }
+
+      // 2. Create WebAuthn credential using viem
       const viemCredential = await createWebAuthnCredential({
-        name: walletName,
+        name: trimmedName,
       });
 
-      // 2. Save credential to passkey service
-      const passkeyService = getPasskeyService();
+      // 3. Save credential to passkey service
       const credentialToSave = {
         id: viemCredential.id,
         rawId: viemCredential.id, // viem returns base64url encoded id
         publicKey: viemCredential.publicKey,
         algorithm: -7, // ES256 (P-256)
         createdAt: Date.now(),
-        name: walletName,
+        name: trimmedName,
       };
 
       await passkeyService.saveCredential(credentialToSave);

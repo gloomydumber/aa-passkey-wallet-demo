@@ -79,11 +79,13 @@ export function SendForm({ balance, isLoading, gasEstimate, onSubmit }: SendForm
     return true;
   }, [recipient, amount, balance]);
 
-  // Format balance for display
+  // Format balance for display (truncated to reasonable precision)
   const formattedBalance = useMemo(() => {
     if (!balance) return undefined;
-    // Use the pre-formatted balance from the type
-    return balance.formattedBalance;
+    const num = parseFloat(balance.formattedBalance);
+    if (isNaN(num)) return balance.formattedBalance;
+    if (num > 0 && num < 0.000001) return num.toExponential(2);
+    return parseFloat(num.toFixed(6)).toString();
   }, [balance]);
 
   // Handle max button click
