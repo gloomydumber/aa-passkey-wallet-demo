@@ -4,6 +4,13 @@
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "moduleResolution": "bundler",
+    "baseUrl": ".",
+    "paths": {
+      "@aa-wallet/core": ["packages/core/src/index.ts"],
+      "@aa-wallet/passkey": ["packages/passkey/src/index.ts"],
+      "@aa-wallet/types": ["packages/types/src/index.ts"],
+      "@aa-wallet/utils": ["packages/utils/src/index.ts"]
+    },
     "resolveJsonModule": true,
     "isolatedModules": true,
     "esModuleInterop": true,

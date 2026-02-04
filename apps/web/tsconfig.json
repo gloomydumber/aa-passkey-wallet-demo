@@ -13,13 +13,18 @@
     "isolatedModules": true,
     "jsx": "react-jsx",
     "incremental": true,
+    "baseUrl": ".",
     "plugins": [
       {
         "name": "next"
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@aa-wallet/core": ["../../packages/core/src/index.ts"],
+      "@aa-wallet/passkey": ["../../packages/passkey/src/index.ts"],
+      "@aa-wallet/types": ["../../packages/types/src/index.ts"],
+      "@aa-wallet/utils": ["../../packages/utils/src/index.ts"]
     }
   },
   "include": [
