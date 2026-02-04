@@ -42,4 +42,6 @@ npm-debug.log*
 # AI instructions
 CLAUDE.md
 HANDOFF.md
+LESSONS.md
+SESSION_HISTORY.md
 .claude/
