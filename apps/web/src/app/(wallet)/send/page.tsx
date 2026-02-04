@@ -8,7 +8,7 @@
  */
 
 import { useRouter } from "next/navigation";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { SendForm, ConfirmSheet, TransactionStatus } from "@/components/send";
@@ -34,16 +34,25 @@ export default function SendPage() {
     status,
     transaction,
     gasEstimate,
+    preEstimatedGas,
     result,
     error,
     isFirstTransaction,
     prepare,
     confirm,
     reset,
+    preEstimate,
   } = useSendTransaction({
     account,
     network: activeNetwork,
   });
+
+  // Pre-estimate gas on mount for MAX button
+  useEffect(() => {
+    if (account && !preEstimatedGas) {
+      preEstimate();
+    }
+  }, [account, preEstimatedGas, preEstimate]);
 
   // Check if account has sufficient balance
   const hasBalance = useMemo(() => {
@@ -94,6 +103,7 @@ export default function SendPage() {
           status={status}
           result={result}
           transaction={transaction}
+          gasEstimate={gasEstimate}
           error={error}
           network={activeNetwork}
           symbol={activeNetwork.nativeCurrency.symbol}
@@ -170,6 +180,8 @@ export default function SendPage() {
         balance={balance}
         isLoading={status === "estimating"}
         gasEstimate={gasEstimate}
+        preEstimatedGas={preEstimatedGas}
+        chainId={activeNetwork.chainId}
         onSubmit={handleFormSubmit}
       />
 
@@ -180,6 +192,7 @@ export default function SendPage() {
           isFirstTransaction={isFirstTransaction}
           isSigning={false}
           symbol={activeNetwork.nativeCurrency.symbol}
+          balanceWei={balance ? BigInt(balance.balance) : undefined}
           onConfirm={handleConfirm}
           onCancel={handleCancelConfirm}
         />
@@ -192,6 +205,7 @@ export default function SendPage() {
           isFirstTransaction={isFirstTransaction}
           isSigning={true}
           symbol={activeNetwork.nativeCurrency.symbol}
+          balanceWei={balance ? BigInt(balance.balance) : undefined}
           onConfirm={handleConfirm}
           onCancel={handleCancelConfirm}
         />

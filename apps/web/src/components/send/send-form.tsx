@@ -19,10 +19,13 @@ interface SendFormProps {
   balance: NativeBalance | null;
   isLoading: boolean;
   gasEstimate: GasEstimate | null;
+  /** Pre-estimated gas from page load (used for MAX button) */
+  preEstimatedGas: GasEstimate | null;
+  chainId: number;
   onSubmit: (to: Address, amount: string) => void;
 }
 
-export function SendForm({ balance, isLoading, gasEstimate, onSubmit }: SendFormProps) {
+export function SendForm({ balance, isLoading, gasEstimate, preEstimatedGas, chainId, onSubmit }: SendFormProps) {
   const [recipient, setRecipient] = useState("");
   const [amount, setAmount] = useState("");
   const [touched, setTouched] = useState({ recipient: false, amount: false });
@@ -79,13 +82,12 @@ export function SendForm({ balance, isLoading, gasEstimate, onSubmit }: SendForm
     return true;
   }, [recipient, amount, balance]);
 
-  // Format balance for display (truncated to reasonable precision)
+  // Format balance for display
+  // For small balances, show full precision to avoid confusion
   const formattedBalance = useMemo(() => {
     if (!balance) return undefined;
-    const num = parseFloat(balance.formattedBalance);
-    if (isNaN(num)) return balance.formattedBalance;
-    if (num > 0 && num < 0.000001) return num.toExponential(2);
-    return parseFloat(num.toFixed(6)).toString();
+    // Use formattedBalance directly from viem's formatEther which preserves precision
+    return balance.formattedBalance;
   }, [balance]);
 
   // Handle max button click
@@ -93,16 +95,38 @@ export function SendForm({ balance, isLoading, gasEstimate, onSubmit }: SendForm
     if (!balance) return;
 
     const balanceWei = BigInt(balance.balance);
-    // Reserve some gas (use estimate if available, otherwise use a default)
-    const reserveForGas = gasEstimate?.totalGasCost ?? parseEther("0.001");
-    const maxAmount = balanceWei > reserveForGas ? balanceWei - reserveForGas : BigInt(0);
 
-    if (maxAmount > BigInt(0)) {
-      const formatted = formatEther(maxAmount);
+    // Use actual gas estimate: prefer current estimate, fall back to pre-estimated
+    const estimatedGas = gasEstimate ?? preEstimatedGas;
+
+    if (!estimatedGas) {
+      // No gas estimate yet - can't calculate max accurately
+      // Set 90% of balance as a rough approximation
+      const roughMax = (balanceWei * BigInt(90)) / BigInt(100);
+      if (roughMax > BigInt(0)) {
+        setAmount(formatEther(roughMax));
+        setTouched((prev) => ({ ...prev, amount: true }));
+      }
+      return;
+    }
+
+    // Add 20% safety buffer to gas estimate - actual gas can vary slightly from estimate
+    // This prevents inner transaction failures when sending max
+    const reserveForGas = (estimatedGas.totalGasCost * BigInt(120)) / BigInt(100);
+
+    if (balanceWei <= reserveForGas) {
+      // Balance too low - set full balance and let validation show error
+      const formatted = formatEther(balanceWei);
       setAmount(formatted);
       setTouched((prev) => ({ ...prev, amount: true }));
+      return;
     }
-  }, [balance, gasEstimate]);
+
+    const maxAmount = balanceWei - reserveForGas;
+    const formatted = formatEther(maxAmount);
+    setAmount(formatted);
+    setTouched((prev) => ({ ...prev, amount: true }));
+  }, [balance, gasEstimate, preEstimatedGas]);
 
   // Handle form submit
   const handleSubmit = useCallback(

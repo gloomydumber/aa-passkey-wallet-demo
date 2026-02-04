@@ -10,18 +10,28 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, CheckCircle2, XCircle, ExternalLink, Copy, Check } from "lucide-react";
 import { useState, useCallback } from "react";
-import type { TransactionResult, TransactionDetails } from "@/hooks/use-send-transaction";
+import { formatEther } from "viem";
+import type { TransactionResult, TransactionDetails, GasEstimate } from "@/hooks/use-send-transaction";
 import type { Network } from "@aa-wallet/types";
 
 interface TransactionStatusProps {
   status: "pending" | "success" | "failed";
   result: TransactionResult | null;
   transaction: TransactionDetails | null;
+  gasEstimate: GasEstimate | null;
   error: string | null;
   network: Network;
   symbol?: string;
   onDone: () => void;
   onRetry?: () => void;
+}
+
+function formatGasCost(value: bigint): string {
+  const eth = parseFloat(formatEther(value));
+  if (eth < 0.0001) {
+    return eth.toExponential(2);
+  }
+  return eth.toFixed(6).replace(/\.?0+$/, "");
 }
 
 function truncateHash(hash: string): string {
@@ -56,6 +66,7 @@ export function TransactionStatus({
   status,
   result,
   transaction,
+  gasEstimate,
   error,
   network,
   symbol = "ETH",
@@ -63,6 +74,10 @@ export function TransactionStatus({
   onRetry,
 }: TransactionStatusProps) {
   const explorerUrl = network.explorerUrl;
+
+  // Calculate savings if we have both actual and estimated
+  const actualGasCost = result?.actualGasCost;
+  const estimatedGasCost = gasEstimate?.totalGasCost;
 
   return (
     <Card>
@@ -151,6 +166,30 @@ export function TransactionStatus({
                 <span className="font-mono text-sm text-zinc-900 dark:text-zinc-50">
                   {result.blockNumber.toLocaleString()}
                 </span>
+              </div>
+            )}
+
+            {/* Gas Cost (actual vs estimated) */}
+            {status === "success" && actualGasCost && (
+              <div className="border-t border-zinc-200 pt-3 dark:border-zinc-700">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-zinc-500 dark:text-zinc-400">
+                    Gas Fee Paid
+                  </span>
+                  <span className="text-sm font-medium text-green-600 dark:text-green-400">
+                    {formatGasCost(actualGasCost)} {symbol}
+                  </span>
+                </div>
+                {estimatedGasCost && (
+                  <div className="mt-1 flex items-center justify-between">
+                    <span className="text-xs text-zinc-400 dark:text-zinc-500">
+                      Max was
+                    </span>
+                    <span className="text-xs text-zinc-400 dark:text-zinc-500">
+                      {formatGasCost(estimatedGasCost)} {symbol}
+                    </span>
+                  </div>
+                )}
               </div>
             )}
           </div>

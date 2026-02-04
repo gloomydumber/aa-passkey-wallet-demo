@@ -29,13 +29,16 @@ export function useBalance({ address, refetchInterval = 30000 }: UseBalanceOptio
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  const fetchBalance = useCallback(async () => {
+  const fetchBalance = useCallback(async (isInitial = false) => {
     if (!address) {
       setBalance(null);
       return;
     }
 
-    setIsLoading(true);
+    // Only show loading state for initial fetch, not background refetches
+    if (isInitial) {
+      setIsLoading(true);
+    }
     setError(null);
 
     try {
@@ -46,27 +49,34 @@ export function useBalance({ address, refetchInterval = 30000 }: UseBalanceOptio
       console.error("Failed to fetch balance:", err);
       setError(err instanceof Error ? err : new Error("Failed to fetch balance"));
     } finally {
-      setIsLoading(false);
+      if (isInitial) {
+        setIsLoading(false);
+      }
     }
   }, [address, activeNetwork]);
 
   // Fetch on mount and when dependencies change
   useEffect(() => {
-    fetchBalance();
+    fetchBalance(true); // Initial fetch shows loading state
   }, [fetchBalance]);
 
-  // Set up periodic refetch
+  // Set up periodic refetch (background, no loading state)
   useEffect(() => {
     if (!address || refetchInterval <= 0) return;
 
-    const interval = setInterval(fetchBalance, refetchInterval);
+    const interval = setInterval(() => fetchBalance(false), refetchInterval);
     return () => clearInterval(interval);
   }, [address, refetchInterval, fetchBalance]);
+
+  // Manual refetch - shows loading state if no balance yet
+  const refetch = useCallback(async () => {
+    await fetchBalance(balance === null);
+  }, [fetchBalance, balance]);
 
   return {
     balance,
     isLoading,
     error,
-    refetch: fetchBalance,
+    refetch,
   };
 }
