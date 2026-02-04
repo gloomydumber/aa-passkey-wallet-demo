@@ -163,24 +163,20 @@ export default function DeployPage() {
       const maxPriorityFeePerGas = (BigInt(gasPrices.fast.maxPriorityFeePerGas) * BigInt(110)) / BigInt(100);
 
       // Helper to calculate requiredPrefund from gas estimate
-      // Note: Pimlico enforces minimum verificationGasLimit of ~800,000 for P256 deployments.
-      // This was discovered empirically - not documented in official Pimlico docs.
-      // When estimation returned 515,516, bundler silently used 800,000, causing AA21 errors.
-      // We use max(estimated, 800000) to match actual bundler behavior.
-      const BUNDLER_MIN_VERIFICATION_GAS = BigInt(800000);
+      //
+      // INVESTIGATION RESULT (2026-02-04):
+      // Previously we assumed Pimlico required minimum verificationGasLimit of 800,000.
+      // Testing proved this was INCORRECT - deployment succeeded with bundler's raw
+      // estimate of 515,516 (actual gas used: 357,794).
+      // The bundler's eth_estimateUserOperationGas is accurate and sufficient.
 
       const calculatePrefund = (estimate: { callGasLimit: bigint; verificationGasLimit: bigint; preVerificationGas: bigint }) => {
-        // Use the higher of estimated or bundler minimum
-        const effectiveVerificationGasLimit = estimate.verificationGasLimit > BUNDLER_MIN_VERIFICATION_GAS
-          ? estimate.verificationGasLimit
-          : BUNDLER_MIN_VERIFICATION_GAS;
-
         const userOpForPrefund = {
           sender: accountAddress,
           nonce: BigInt(0),
           callData: "0x" as `0x${string}`,
           callGasLimit: estimate.callGasLimit,
-          verificationGasLimit: effectiveVerificationGasLimit,
+          verificationGasLimit: estimate.verificationGasLimit,
           preVerificationGas: estimate.preVerificationGas,
           maxFeePerGas: bufferedMaxFeePerGas,
           maxPriorityFeePerGas,
@@ -245,26 +241,19 @@ export default function DeployPage() {
           stateOverride,
         });
 
-        // Use the higher of estimated or bundler minimum for verification gas
-        const effectiveVerificationGasLimit = estimate.verificationGasLimit > BUNDLER_MIN_VERIFICATION_GAS
-          ? estimate.verificationGasLimit
-          : BUNDLER_MIN_VERIFICATION_GAS;
-
         const requiredPrefund = calculatePrefund(estimate);
-        console.log("Gas estimate (self-funded with stateOverride - for Deploy with ETH):", {
+        console.log("Gas estimate (self-funded):", {
           preVerificationGas: estimate.preVerificationGas.toString(),
           verificationGasLimit: estimate.verificationGasLimit.toString(),
-          effectiveVerificationGasLimit: effectiveVerificationGasLimit.toString(),
           callGasLimit: estimate.callGasLimit.toString(),
-          maxFeePerGas: `${formatEther(bufferedMaxFeePerGas * BigInt(1e9))} gwei`,
-          requiredPrefund: formatEther(requiredPrefund),
+          maxFeePerGas: bufferedMaxFeePerGas.toString() + " wei",
+          requiredPrefund: formatEther(requiredPrefund) + " ETH",
         });
 
         // Store gas params for use in deployment
-        // Use effective verification gas limit to match bundler behavior
         setSelfFundedGasParams({
           callGasLimit: estimate.callGasLimit,
-          verificationGasLimit: effectiveVerificationGasLimit,
+          verificationGasLimit: estimate.verificationGasLimit,
           preVerificationGas: estimate.preVerificationGas,
           maxFeePerGas: bufferedMaxFeePerGas,
           maxPriorityFeePerGas,
@@ -381,24 +370,20 @@ export default function DeployPage() {
                        selfFundedGasParams.preVerificationGas;
       const calculatedPrefund = totalGas * freshMaxFeePerGas;
 
-      console.log("=== SELF-FUNDED DEPLOYMENT DEBUG ===");
-      console.log("Account address:", accountAddress);
-      console.log("Account balance:", formatEther(balanceWei), activeNetwork.nativeCurrency.symbol);
-      console.log("Balance (wei):", balanceWei.toString());
-      console.log("Gas params:", {
-        callGasLimit: selfFundedGasParams.callGasLimit.toString(),
-        verificationGasLimit: selfFundedGasParams.verificationGasLimit.toString(),
-        preVerificationGas: selfFundedGasParams.preVerificationGas.toString(),
-        totalGas: totalGas.toString(),
+      console.log("Self-funded deployment:", {
+        account: accountAddress,
+        balance: formatEther(balanceWei) + " " + activeNetwork.nativeCurrency.symbol,
+        gasParams: {
+          callGasLimit: selfFundedGasParams.callGasLimit.toString(),
+          verificationGasLimit: selfFundedGasParams.verificationGasLimit.toString(),
+          preVerificationGas: selfFundedGasParams.preVerificationGas.toString(),
+        },
+        gasPrice: {
+          maxFeePerGas: freshMaxFeePerGas.toString() + " wei",
+          maxPriorityFeePerGas: freshMaxPriorityFeePerGas.toString() + " wei",
+        },
+        requiredPrefund: formatEther(calculatedPrefund) + " ETH",
       });
-      console.log("Gas price (from Pimlico fast tier + 10% buffer):", {
-        pimlicoFastMaxFeePerGas: gasPrices.fast.maxFeePerGas,
-        freshMaxFeePerGas: freshMaxFeePerGas.toString() + " wei (" + formatEther(freshMaxFeePerGas * BigInt(1e9)) + " gwei)",
-        freshMaxPriorityFeePerGas: freshMaxPriorityFeePerGas.toString() + " wei",
-      });
-      console.log("Calculated prefund:", formatEther(calculatedPrefund), "ETH");
-      console.log("Balance vs Prefund:", formatEther(balanceWei), ">=", formatEther(calculatedPrefund), "?", balanceWei >= calculatedPrefund);
-      console.log("====================================");
 
       // Send 0-value transaction to self - this triggers deployment
       // Use gas limits from estimation but FRESH gas price
@@ -427,7 +412,10 @@ export default function DeployPage() {
         hash: userOpHash,
       });
 
-      console.log("Deployment receipt:", receipt);
+      console.log("Deployment success:", {
+        txHash: receipt.receipt.transactionHash,
+        actualGasUsed: receipt.actualGasUsed?.toString(),
+      });
 
       setResult({ txHash: receipt.receipt.transactionHash });
       setState("success");
