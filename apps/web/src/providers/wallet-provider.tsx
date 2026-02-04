@@ -7,7 +7,7 @@
  */
 
 import { createContext, useContext, useEffect, useCallback, useRef, type ReactNode } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { getPasskeyService, getNetworkManager, cleanupWalletClient, createSmartAccountAdapter } from "@/lib/wallet-client";
 import { useWalletStore } from "@/stores/wallet-store";
 import { useNetworkStore } from "@/stores/network-store";
@@ -24,9 +24,10 @@ interface WalletProviderProps {
 }
 
 export function WalletProvider({ children }: WalletProviderProps) {
-  const { isInitialized, setInitialized, setSession, setCredential, setAccount, reset } = useWalletStore();
+  const { isInitialized, setInitialized, setSession, setCredential, setAccount, logout, reset } = useWalletStore();
   const { activeNetwork } = useNetworkStore();
   const pathname = usePathname();
+  const router = useRouter();
   const lastActivityRef = useRef<number>(Date.now());
 
   // Record activity to reset inactivity timer
@@ -48,7 +49,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
     }
   }, [pathname, isInitialized, recordActivity]);
 
-  // Record activity on user interactions (clicks, keypresses, touch)
+  // Record activity on user interactions (clicks, keypresses, touch, focus)
   useEffect(() => {
     if (!isInitialized) return;
 
@@ -58,10 +59,35 @@ export function WalletProvider({ children }: WalletProviderProps) {
       window.addEventListener(event, recordActivity, { passive: true });
     });
 
+    // Handle tab visibility change - when user returns to tab, record activity
+    // and check if session should still be valid
+    const handleVisibilityChange = async () => {
+      if (document.visibilityState === "visible") {
+        // User returned to tab - check session validity
+        const passkeyService = getPasskeyService();
+        const session = await passkeyService.getSession();
+        if (session) {
+          // Session still valid, record activity
+          recordActivity();
+        }
+        // If session is null, the getSession() call already triggered session_ended
+      }
+    };
+
+    // Handle window focus - similar to visibility change
+    const handleFocus = () => {
+      recordActivity();
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("focus", handleFocus);
+
     return () => {
       events.forEach((event) => {
         window.removeEventListener(event, recordActivity);
       });
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("focus", handleFocus);
     };
   }, [isInitialized, recordActivity]);
 
@@ -80,8 +106,15 @@ export function WalletProvider({ children }: WalletProviderProps) {
           break;
 
         case "session_ended":
-          // Session ended, clear state
-          setSession(null);
+          // Session ended, clear all auth state and redirect to login
+          console.log("Session ended, reason:", event.reason);
+          logout();
+          // Clear any session-scoped flags
+          if (typeof window !== "undefined") {
+            sessionStorage.removeItem("activation_skipped");
+          }
+          // Redirect to login page
+          router.push("/");
           break;
 
         case "credential_registered":
@@ -98,7 +131,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
         }
       }
     },
-    [setSession, setCredential]
+    [setSession, setCredential, logout, router]
   );
 
   // Initialize on mount
