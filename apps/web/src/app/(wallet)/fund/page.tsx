@@ -227,6 +227,12 @@ export default function FundPage() {
                           <Loader2 className="h-3 w-3 animate-spin" />
                           Loading...
                         </span>
+                      ) : activeNetwork.isTestnet && ethAmount !== "N/A" ? (
+                        <>
+                          <span className="line-through opacity-50">{ethAmount}</span>
+                          {" "}
+                          <span>≈ {(parseFloat(ethAmount) / 100).toFixed(6)} {activeNetwork.nativeCurrency.symbol}</span>
+                        </>
                       ) : (
                         `≈ ${ethAmount} ${activeNetwork.nativeCurrency.symbol}`
                       )}
@@ -287,6 +293,26 @@ export default function FundPage() {
           </CardContent>
         </Card>
 
+        {/* Sandbox 1/100 amount callout */}
+        {activeNetwork.isTestnet && (
+          <Card className="mb-6 border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-900/20">
+            <CardContent className="py-4">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="h-5 w-5 flex-shrink-0 text-amber-600 dark:text-amber-400" />
+                <div className="text-sm text-amber-700 dark:text-amber-300">
+                  <p className="font-medium mb-1">Sandbox Delivers 1/100 Amount</p>
+                  <p>
+                    MoonPay sandbox delivers only <strong>1/100</strong> of the quoted amount.
+                    {!isQuoteLoading && estimatedEth !== "N/A" && (
+                      <> You will receive approximately <strong>{(parseFloat(estimatedEth) / 100).toFixed(6)} {activeNetwork.nativeCurrency.symbol}</strong> instead of {estimatedEth} {activeNetwork.nativeCurrency.symbol}.</>
+                    )}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {error && (
           <Card className="mb-6 border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-900/20">
             <CardContent className="py-4">
@@ -316,7 +342,7 @@ export default function FundPage() {
               </>
             ) : (
               <>
-                Buy ${selectedAmount} ({estimatedEth} {activeNetwork.nativeCurrency.symbol})
+                Buy
                 <ExternalLink className="ml-2 h-4 w-4" />
               </>
             )}

@@ -58,22 +58,13 @@ export default function DashboardPage() {
             address={accountAddress}
             explorerUrl={activeNetwork.explorerUrl}
           />
-          {/* Show fund/deploy buttons if not deployed */}
+          {/* Show deploy button if not deployed */}
           {isDeployed === false && (
-            <div className="mt-2 flex gap-2">
-              <Button
-                variant="secondary"
-                size="sm"
-                className="flex-1"
-                onClick={() => router.push("/fund")}
-              >
-                <Wallet className="mr-1 h-4 w-4" />
-                Fund Wallet
-              </Button>
+            <div className="mt-2">
               <Button
                 variant="primary"
                 size="sm"
-                className="flex-1"
+                className="w-full"
                 onClick={() => router.push("/deploy")}
               >
                 <Rocket className="mr-1 h-4 w-4" />
@@ -95,7 +86,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-3 gap-3">
         <Button
           variant="primary"
           size="lg"
@@ -104,6 +95,16 @@ export default function DashboardPage() {
         >
           <Send className="h-5 w-5" />
           <span>Send</span>
+        </Button>
+
+        <Button
+          variant="secondary"
+          size="lg"
+          className="flex flex-col items-center gap-1 py-4"
+          onClick={() => router.push("/fund")}
+        >
+          <Wallet className="h-5 w-5" />
+          <span>Fund</span>
         </Button>
 
         <Button
