@@ -12,7 +12,8 @@ import { parseEther, formatEther } from "viem";
 import type { SmartAccount } from "viem/account-abstraction";
 import { buildTransferCall } from "@aa-wallet/core";
 import type { Address, SmartAccountInstance, Network } from "@aa-wallet/types";
-import { createBundlerClient, createSmartAccountAdapter } from "@/lib/wallet-client";
+import { createBundlerClient, createSmartAccountAdapter, getPublicClient } from "@/lib/wallet-client";
+import { getRequiredPrefund } from "permissionless/utils";
 
 /**
  * Fetch gas prices from Pimlico's API
@@ -261,6 +262,42 @@ export function useSendTransaction({
       // Get the viem account for bundler client
       const viemAccount = account.getViemAccount() as SmartAccount;
       const bundlerClient = createBundlerClient(network, viemAccount, { sponsored });
+
+      // Safety check: verify balance covers prefund + send amount
+      // EntryPoint deducts prefund during validation, reducing SmartAccount balance.
+      // If remaining balance < send amount, the internal execution fails
+      // and the prefund gets stuck in EntryPoint.
+      if (!sponsored) {
+        const publicClient = getPublicClient(network);
+        const currentBalance = await publicClient.getBalance({
+          address: account.address as `0x${string}`,
+        });
+
+        const requiredPrefund = getRequiredPrefund({
+          userOperation: {
+            sender: account.address as `0x${string}`,
+            nonce: BigInt(0),
+            callData: "0x" as `0x${string}`,
+            callGasLimit: gasEstimate.callGasLimit,
+            verificationGasLimit: gasEstimate.verificationGasLimit,
+            preVerificationGas: gasEstimate.preVerificationGas,
+            maxFeePerGas: gasEstimate.maxFeePerGas,
+            maxPriorityFeePerGas: gasEstimate.maxPriorityFeePerGas,
+            signature: "0x" as `0x${string}`,
+            paymasterAndData: "0x" as `0x${string}`,
+          },
+          entryPointVersion: "0.6",
+        });
+
+        const totalRequired = requiredPrefund + transaction.value;
+        if (currentBalance < totalRequired) {
+          setError(
+            `Insufficient balance. Required: ${formatEther(totalRequired)} ETH (${formatEther(requiredPrefund)} gas + ${formatEther(transaction.value)} send), Available: ${formatEther(currentBalance)} ETH`
+          );
+          setStatus("failed");
+          return;
+        }
+      }
 
       // Send the user operation with LOCKED gas parameters from prepare()
       // This ensures the gas cost matches what was shown to user during confirmation

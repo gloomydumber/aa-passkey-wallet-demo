@@ -182,6 +182,14 @@ export function isPaymasterAvailable(network: Network): boolean {
   return !!configuredNetwork.paymasterUrl && configuredNetwork.isTestnet;
 }
 
+/**
+ * Create a public client for balance queries and on-chain reads
+ */
+export function getPublicClient(network: Network) {
+  const configuredNetwork = getConfiguredNetwork(network);
+  return createPublicClientForNetwork({ network: configuredNetwork });
+}
+
 // ============================================
 // Cleanup
 // ============================================
