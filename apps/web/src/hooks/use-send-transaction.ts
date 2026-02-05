@@ -14,6 +14,7 @@ import { buildTransferCall } from "@aa-wallet/core";
 import type { Address, SmartAccountInstance, Network } from "@aa-wallet/types";
 import { createBundlerClient, createSmartAccountAdapter, getPublicClient } from "@/lib/wallet-client";
 import { getRequiredPrefund } from "permissionless/utils";
+import { useActivityStore } from "@/stores/activity-store";
 
 /**
  * Fetch gas prices from Pimlico's API
@@ -255,6 +256,8 @@ export function useSendTransaction({
     setStatus("signing");
     setError(null);
 
+    let submittedUserOpHash: `0x${string}` | null = null;
+
     try {
       // Build the transfer call
       const call = buildTransferCall(transaction.to, transaction.value);
@@ -320,8 +323,23 @@ export function useSendTransaction({
         preVerificationGas: gasEstimate.preVerificationGas,
       });
 
+      submittedUserOpHash = userOpHash;
       setResult({ userOpHash });
       setStatus("pending");
+
+      // Record pending transaction in activity store
+      const { addTransaction, updateTransaction } = useActivityStore.getState();
+      addTransaction({
+        id: Date.now().toString(),
+        type: "transfer",
+        userOpHash,
+        from: account.address as `0x${string}`,
+        to: transaction.to,
+        value: transaction.value.toString(),
+        status: "pending",
+        chainId: network.chainId,
+        timestamp: Date.now(),
+      });
 
       // Wait for the receipt
       const receipt = await bundlerClient.waitForUserOperationReceipt({
@@ -341,6 +359,13 @@ export function useSendTransaction({
         actualGasCost,
       });
       setStatus("success");
+
+      // Update activity store with success
+      updateTransaction(network.chainId, userOpHash, {
+        txHash: receipt.receipt.transactionHash,
+        status: "success",
+        gasUsed: actualGasCost?.toString(),
+      });
     } catch (err) {
       console.error("Transaction failed:", err);
 
@@ -367,6 +392,14 @@ export function useSendTransaction({
         setError(errorMessage);
       }
       setStatus("failed");
+
+      // Update activity store if we had a pending transaction
+      if (submittedUserOpHash) {
+        useActivityStore.getState().updateTransaction(network.chainId, submittedUserOpHash, {
+          status: "failed",
+          error: errorMessage,
+        });
+      }
     }
   }, [account, network, transaction, gasEstimate, sponsored]);
 
