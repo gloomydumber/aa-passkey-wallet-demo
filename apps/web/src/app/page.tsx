@@ -71,13 +71,13 @@ export default function LoginPage() {
   }, [isAuthenticated, isCheckingCredentials, isRedirecting, router]);
 
   const handleRegisterSuccess = () => {
-    // New account - go to activate page for easy deploying
+    // New account - go to dashboard (shows deploy card if not deployed)
     setIsRedirecting(true);
-    router.push("/activate");
+    router.push("/dashboard");
   };
 
   const handleLoginSuccess = () => {
-    // Existing account - go to dashboard (layout will redirect to /activate if not deployed)
+    // Existing account - go to dashboard
     setIsRedirecting(true);
     router.push("/dashboard");
   };
