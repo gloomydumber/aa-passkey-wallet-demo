@@ -47,13 +47,6 @@ export default function SendPage() {
     network: activeNetwork,
   });
 
-  // Pre-estimate gas on mount for MAX button
-  useEffect(() => {
-    if (account && !preEstimatedGas) {
-      preEstimate();
-    }
-  }, [account, preEstimatedGas, preEstimate]);
-
   // Check if account has sufficient balance
   const hasBalance = useMemo(() => {
     if (!balance) return false;
@@ -61,6 +54,13 @@ export default function SendPage() {
     const minBalance = BigInt("100000000000000"); // 0.0001 ETH
     return balanceWei >= minBalance;
   }, [balance]);
+
+  // Pre-estimate gas on mount for MAX button (only if account has balance)
+  useEffect(() => {
+    if (account && !preEstimatedGas && hasBalance) {
+      preEstimate();
+    }
+  }, [account, preEstimatedGas, hasBalance, preEstimate]);
 
   // Handle form submission
   const handleFormSubmit = useCallback(

@@ -935,7 +935,7 @@ export default function DeployPage() {
 
       {/* Network Notice */}
       {activeNetwork.isTestnet && (
-        <div className="mt-6 rounded-lg bg-zinc-100 p-3 text-center text-sm text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
+        <div className="mt-6 rounded-lg bg-amber-50 p-3 text-center text-sm text-amber-700 dark:bg-amber-900/20 dark:text-amber-400">
           You are on {activeNetwork.displayName} (Testnet)
         </div>
       )}

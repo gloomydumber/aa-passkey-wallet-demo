@@ -152,6 +152,16 @@ export class PasskeyService {
     return this.credentialStore.hasCredentials();
   }
 
+  /**
+   * Clear all stored credentials and session data
+   * Use this for a complete wallet reset (e.g., "Clear All Data" feature)
+   */
+  async clearAllCredentials(): Promise<void> {
+    await this.sessionManager.endSession();
+    await this.credentialStore.clearAllCredentials();
+    this.emit({ type: "session_ended", reason: "logout" });
+  }
+
   // ============================================
   // Session Management
   // ============================================

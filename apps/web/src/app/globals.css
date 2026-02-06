@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -12,8 +14,15 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* Dark mode via class (next-themes) */
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+}
+
+/* Fallback: Dark mode via system preference */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not(.light) {
     --background: #0a0a0a;
     --foreground: #ededed;
   }
@@ -48,16 +57,30 @@ body {
   background-color: #71717a;
 }
 
+/* Dark scrollbar via class */
+.dark .scrollbar-thin {
+  scrollbar-color: #52525b transparent;
+}
+
+.dark .scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: #52525b;
+}
+
+.dark .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background-color: #71717a;
+}
+
+/* Fallback: Dark scrollbar via system preference */
 @media (prefers-color-scheme: dark) {
-  .scrollbar-thin {
+  :root:not(.light) .scrollbar-thin {
     scrollbar-color: #52525b transparent;
   }
 
-  .scrollbar-thin::-webkit-scrollbar-thumb {
+  :root:not(.light) .scrollbar-thin::-webkit-scrollbar-thumb {
     background-color: #52525b;
   }
 
-  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  :root:not(.light) .scrollbar-thin::-webkit-scrollbar-thumb:hover {
     background-color: #71717a;
   }
 }

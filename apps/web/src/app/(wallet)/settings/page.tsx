@@ -1,15 +1,39 @@
 "use client";
 
 /**
- * Settings Page (Placeholder)
+ * Settings Page
  *
- * TODO: Implement settings including network config and credential management.
+ * Comprehensive settings screen with session, account, provider, theme, and about sections.
  */
 
 import { useRouter } from "next/navigation";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Construction } from "lucide-react";
+import {
+  SessionSettings,
+  AccountSettings,
+  ProviderSettings,
+  ThemeSettings,
+  AboutSettings,
+} from "@/components/settings";
+import { ArrowLeft, Clock, User, Globe, Palette, Info } from "lucide-react";
+
+interface SectionProps {
+  icon: React.ReactNode;
+  title: string;
+  children: React.ReactNode;
+}
+
+function Section({ icon, title, children }: SectionProps) {
+  return (
+    <section className="space-y-3">
+      <h2 className="flex items-center gap-2 text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+        {icon}
+        {title}
+      </h2>
+      {children}
+    </section>
+  );
+}
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -23,16 +47,27 @@ export default function SettingsPage() {
         <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-50">Settings</h1>
       </header>
 
-      <Card>
-        <CardHeader className="text-center">
-          <Construction className="mx-auto h-12 w-12 text-zinc-400" />
-          <CardTitle className="text-lg">Coming Soon</CardTitle>
-        </CardHeader>
-        <CardContent className="text-center text-sm text-zinc-500 dark:text-zinc-400">
-          Settings page will include network configuration,
-          credential management, and other preferences.
-        </CardContent>
-      </Card>
+      <div className="space-y-6">
+        <Section icon={<Clock className="h-4 w-4" />} title="Session">
+          <SessionSettings />
+        </Section>
+
+        <Section icon={<User className="h-4 w-4" />} title="Accounts">
+          <AccountSettings />
+        </Section>
+
+        <Section icon={<Globe className="h-4 w-4" />} title="Providers">
+          <ProviderSettings />
+        </Section>
+
+        <Section icon={<Palette className="h-4 w-4" />} title="Appearance">
+          <ThemeSettings />
+        </Section>
+
+        <Section icon={<Info className="h-4 w-4" />} title="About">
+          <AboutSettings />
+        </Section>
+      </div>
     </div>
   );
 }
