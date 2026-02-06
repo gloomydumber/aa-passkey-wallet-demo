@@ -119,7 +119,7 @@ export default function SendPage() {
     return (
       <div className="mx-auto max-w-lg p-4">
         <header className="mb-6 flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={() => router.back()}>
+          <Button variant="ghost" size="sm" onClick={() => router.push("/dashboard")}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-50">Send</h1>
@@ -137,7 +137,7 @@ export default function SendPage() {
     return (
       <div className="mx-auto max-w-lg p-4">
         <header className="mb-6 flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={() => router.back()}>
+          <Button variant="ghost" size="sm" onClick={() => router.push("/dashboard")}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-50">Send</h1>
@@ -170,7 +170,7 @@ export default function SendPage() {
   return (
     <div className="mx-auto max-w-lg p-4">
       <header className="mb-6 flex items-center gap-4">
-        <Button variant="ghost" size="sm" onClick={() => router.back()}>
+        <Button variant="ghost" size="sm" onClick={() => router.push("/dashboard")}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-50">Send</h1>
