@@ -6,12 +6,14 @@
  * Displays transaction history for the current chain, sorted newest first.
  */
 
+import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowUpRight, Trash2 } from "lucide-react";
 import { useActivityStore } from "@/stores/activity-store";
 import { useNetworkStore } from "@/stores/network-store";
+import { useWalletStore } from "@/stores/wallet-store";
 import { TransactionItem } from "@/components/activity/transaction-item";
 import type { Transaction } from "@aa-wallet/types";
 
@@ -20,11 +22,18 @@ const EMPTY_TXS: Transaction[] = [];
 export default function ActivityPage() {
   const router = useRouter();
   const activeNetwork = useNetworkStore((s) => s.activeNetwork);
+  const accountAddress = useWalletStore((s) => s.accountAddress);
   const transactions = useActivityStore((s) => s.transactions[activeNetwork.chainId] ?? EMPTY_TXS);
   const clearHistory = useActivityStore((s) => s.clearHistory);
 
-  // Already sorted newest-first by addTransaction (prepends), but ensure it
-  const sorted = [...transactions].sort((a, b) => b.timestamp - a.timestamp);
+  // Filter by current account and sort newest-first
+  const sorted = useMemo(() => {
+    if (!accountAddress) return [];
+    const normalizedAddress = accountAddress.toLowerCase();
+    return transactions
+      .filter((tx) => tx.from.toLowerCase() === normalizedAddress)
+      .sort((a, b) => b.timestamp - a.timestamp);
+  }, [transactions, accountAddress]);
 
   return (
     <div className="mx-auto max-w-lg p-4">

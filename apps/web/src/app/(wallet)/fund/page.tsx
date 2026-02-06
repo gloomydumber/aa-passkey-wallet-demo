@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { useWalletStore } from "@/stores/wallet-store";
 import { useNetworkStore } from "@/stores/network-store";
 import { useBalance, useAccountStatus } from "@/hooks";
-import { isMoonPayAvailable, getSignedMoonPayUrl, openMoonPayPopup, getMoonPayInfo, getMoonPayQuote } from "@/lib/moonpay";
+import { isMoonPayAvailable, isMoonPaySupportedNetwork, getMoonPayUnsupportedMessage, getSignedMoonPayUrl, openMoonPayPopup, getMoonPayInfo, getMoonPayQuote } from "@/lib/moonpay";
 import {
   CreditCard,
   ArrowDownToLine,
@@ -66,6 +66,7 @@ export default function FundPage() {
   });
 
   const moonPayAvailable = isMoonPayAvailable();
+  const moonPayNetworkSupported = isMoonPaySupportedNetwork(activeNetwork);
   const moonPayInfo = getMoonPayInfo(activeNetwork);
 
   // Fetch quotes for all amounts when entering onramp-confirm state
@@ -106,8 +107,12 @@ export default function FundPage() {
       setError("MoonPay is not configured. Please add your API key to .env.local");
       return;
     }
+    if (!moonPayNetworkSupported) {
+      setError(getMoonPayUnsupportedMessage(activeNetwork));
+      return;
+    }
     setState("onramp-confirm");
-  }, [moonPayAvailable]);
+  }, [moonPayAvailable, moonPayNetworkSupported, activeNetwork]);
 
   const handleOpenMoonPay = useCallback(async () => {
     if (!accountAddress) return;
@@ -576,11 +581,11 @@ export default function FundPage() {
         {/* Option 1: Buy with Card */}
         <Card
           className={`border-2 border-transparent transition-colors ${
-            moonPayAvailable
+            moonPayAvailable && moonPayNetworkSupported
               ? "cursor-pointer hover:border-blue-500 dark:hover:border-blue-600"
               : "cursor-not-allowed opacity-60"
           }`}
-          onClick={moonPayAvailable ? handleBuyWithCard : undefined}
+          onClick={moonPayAvailable && moonPayNetworkSupported ? handleBuyWithCard : undefined}
         >
           <CardContent className="flex items-center gap-4 py-4">
             <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
@@ -598,7 +603,12 @@ export default function FundPage() {
                   API Key Required
                 </span>
               )}
-              {moonPayAvailable && activeNetwork.isTestnet && (
+              {moonPayAvailable && !moonPayNetworkSupported && (
+                <span className="mt-1 inline-block rounded bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                  Not available on {activeNetwork.displayName}
+                </span>
+              )}
+              {moonPayAvailable && moonPayNetworkSupported && activeNetwork.isTestnet && (
                 <span className="mt-1 inline-block rounded bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
                   Test Mode
                 </span>

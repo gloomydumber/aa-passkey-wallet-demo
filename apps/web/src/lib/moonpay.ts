@@ -32,6 +32,37 @@ export function isMoonPayAvailable(): boolean {
 }
 
 /**
+ * Networks supported by MoonPay on-ramp
+ * Note: MoonPay sandbox only supports Ethereum Sepolia, not Arbitrum Sepolia
+ */
+const MOONPAY_SUPPORTED_CHAIN_IDS: number[] = [
+  1,        // Ethereum Mainnet
+  11155111, // Ethereum Sepolia
+  // 42161,  // Arbitrum One - not enabled for now
+  // 421614, // Arbitrum Sepolia - not supported in MoonPay sandbox
+];
+
+/**
+ * Check if MoonPay supports the given network for on-ramp
+ */
+export function isMoonPaySupportedNetwork(network: Network): boolean {
+  return MOONPAY_SUPPORTED_CHAIN_IDS.includes(network.chainId);
+}
+
+/**
+ * Get unsupported network message
+ */
+export function getMoonPayUnsupportedMessage(network: Network): string {
+  if (network.chainId === 421614) {
+    return "MoonPay does not support Arbitrum Sepolia testnet. Switch to Sepolia or use the Receive option to get ETH from a faucet.";
+  }
+  if (network.chainId === 42161) {
+    return "MoonPay on-ramp for Arbitrum is not enabled. Use the Receive option to transfer ETH from another wallet.";
+  }
+  return `MoonPay does not support ${network.displayName}. Use the Receive option instead.`;
+}
+
+/**
  * Get signed MoonPay widget URL from server
  *
  * Calls the /api/moonpay/sign endpoint to get a signed URL with
