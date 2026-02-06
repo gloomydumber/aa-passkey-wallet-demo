@@ -8,7 +8,7 @@
  * - Receive ETH (show address with copy)
  */
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import { useWalletStore } from "@/stores/wallet-store";
 import { useNetworkStore } from "@/stores/network-store";
 import { useBalance, useAccountStatus } from "@/hooks";
 import { isMoonPayAvailable, isMoonPaySupportedNetwork, getMoonPayUnsupportedMessage, getSignedMoonPayUrl, openMoonPayPopup, getMoonPayInfo, getMoonPayQuote } from "@/lib/moonpay";
+import { formatEther } from "viem";
 import {
   CreditCard,
   ArrowDownToLine,
@@ -28,9 +29,15 @@ import {
   Copy,
   RefreshCw,
   Rocket,
+  Clock,
 } from "lucide-react";
 
-type FundState = "idle" | "onramp-confirm" | "onramp-waiting" | "receive";
+type FundState = "idle" | "onramp-confirm" | "onramp-waiting" | "popup-closed" | "funds-received" | "receive";
+
+// Polling and timeout configuration
+const BALANCE_POLL_INTERVAL = 10000; // 10 seconds
+const POPUP_CHECK_INTERVAL = 1000; // 1 second
+const MAX_WAITING_TIMEOUT = 10 * 60 * 1000; // 10 minutes
 
 // Preset USD amounts for selection
 const AMOUNT_OPTIONS = [30, 50, 100, 200];
@@ -56,6 +63,12 @@ export default function FundPage() {
   const [copied, setCopied] = useState(false);
   const [selectedAmount, setSelectedAmount] = useState<number>(50); // Default $50
   const [quotes, setQuotes] = useState<QuoteCache>({});
+
+  // Polling and popup tracking
+  const [initialBalance, setInitialBalance] = useState<bigint | null>(null);
+  const [receivedAmount, setReceivedAmount] = useState<bigint | null>(null);
+  const popupRef = useRef<Window | null>(null);
+  const waitingStartTimeRef = useRef<number | null>(null);
 
   const { balance, isLoading: isBalanceLoading, refetch: refetchBalance } = useBalance({
     address: accountAddress,
@@ -102,6 +115,74 @@ export default function FundPage() {
     });
   }, [state, activeNetwork]);
 
+  // Capture initial balance when entering waiting/receive states
+  useEffect(() => {
+    if (state === "onramp-waiting" || state === "receive") {
+      const currentBalance = balance ? BigInt(balance.balance) : BigInt(0);
+      setInitialBalance(currentBalance);
+      waitingStartTimeRef.current = Date.now();
+    } else if (state === "idle" || state === "onramp-confirm") {
+      setInitialBalance(null);
+      setReceivedAmount(null);
+      waitingStartTimeRef.current = null;
+    }
+  }, [state, balance?.balance]);
+
+  // Detect balance increase
+  const fundsReceived = useMemo(() => {
+    if (initialBalance === null || !balance) return false;
+    const currentBalance = BigInt(balance.balance);
+    return currentBalance > initialBalance;
+  }, [balance, initialBalance]);
+
+  // When funds are received, calculate amount and transition to success state
+  useEffect(() => {
+    if (fundsReceived && (state === "onramp-waiting" || state === "receive" || state === "popup-closed")) {
+      const currentBalance = BigInt(balance!.balance);
+      const received = currentBalance - (initialBalance ?? BigInt(0));
+      setReceivedAmount(received);
+      setState("funds-received");
+    }
+  }, [fundsReceived, state, balance, initialBalance]);
+
+  // Poll balance while in waiting states
+  useEffect(() => {
+    if (state !== "onramp-waiting" && state !== "receive" && state !== "popup-closed") return;
+
+    const interval = setInterval(() => {
+      refetchBalance();
+    }, BALANCE_POLL_INTERVAL);
+
+    return () => clearInterval(interval);
+  }, [state, refetchBalance]);
+
+  // Check if popup was closed (only for onramp-waiting)
+  useEffect(() => {
+    if (state !== "onramp-waiting") return;
+
+    const checkPopup = setInterval(() => {
+      if (popupRef.current?.closed) {
+        clearInterval(checkPopup);
+        // Don't immediately go back - ask user if they completed
+        setState("popup-closed");
+      }
+    }, POPUP_CHECK_INTERVAL);
+
+    return () => clearInterval(checkPopup);
+  }, [state]);
+
+  // Timeout after 10 minutes of waiting
+  useEffect(() => {
+    if (state !== "onramp-waiting" && state !== "popup-closed") return;
+
+    const timeout = setTimeout(() => {
+      setError("Taking too long? You can check your balance later from the dashboard.");
+      setState("idle");
+    }, MAX_WAITING_TIMEOUT);
+
+    return () => clearTimeout(timeout);
+  }, [state]);
+
   const handleBuyWithCard = useCallback(() => {
     if (!moonPayAvailable) {
       setError("MoonPay is not configured. Please add your API key to .env.local");
@@ -131,6 +212,8 @@ export default function FundPage() {
         return;
       }
 
+      // Store popup reference for close detection
+      popupRef.current = popup;
       setState("onramp-waiting");
     } catch (err) {
       console.error("MoonPay error:", err);
@@ -162,6 +245,20 @@ export default function FundPage() {
   const handleBack = useCallback(() => {
     setState("idle");
     setError(null);
+    popupRef.current = null;
+  }, []);
+
+  const handleKeepWaiting = useCallback(() => {
+    // User says they completed purchase, keep polling
+    // Clear popup ref so the close-detection doesn't re-trigger
+    popupRef.current = null;
+    setState("onramp-waiting");
+  }, []);
+
+  const handleDidNotComplete = useCallback(() => {
+    // User didn't complete, go back to options
+    setState("idle");
+    popupRef.current = null;
   }, []);
 
   const handleGoToDashboard = useCallback(() => {
@@ -373,35 +470,89 @@ export default function FundPage() {
           </p>
         </div>
 
-        {/* Balance display */}
+        {/* Balance display with auto-polling indicator */}
         <Card className="mb-6">
           <CardContent className="py-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-zinc-500 dark:text-zinc-400">Current Balance</span>
               <div className="flex items-center gap-2">
-                <span className="font-medium text-zinc-900 dark:text-zinc-50">
-                  {isBalanceLoading ? "..." : formattedBalance}
+                <span className="text-sm text-zinc-500 dark:text-zinc-400">Current Balance</span>
+                <span className="inline-flex items-center gap-1 rounded bg-blue-100 px-1.5 py-0.5 text-xs text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                  <RefreshCw className="h-3 w-3 animate-spin" />
+                  Auto-checking
                 </span>
-                <button
-                  onClick={() => refetchBalance()}
-                  className="p-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
-                >
-                  <RefreshCw className="h-4 w-4" />
-                </button>
               </div>
+              <span className="font-medium text-zinc-900 dark:text-zinc-50">
+                {isBalanceLoading ? "..." : formattedBalance}
+              </span>
             </div>
           </CardContent>
         </Card>
 
         {/* What happens next */}
-        <Card className="mb-6 border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-900/20">
+        <Card className="mb-6 border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-900/20">
           <CardContent className="py-4">
             <div className="flex items-start gap-3">
-              <Info className="h-5 w-5 flex-shrink-0 text-amber-600 dark:text-amber-400" />
-              <div className="text-sm text-amber-700 dark:text-amber-300">
-                <p className="font-medium mb-1">After purchase completes:</p>
+              <Info className="h-5 w-5 flex-shrink-0 text-blue-600 dark:text-blue-400" />
+              <div className="text-sm text-blue-700 dark:text-blue-300">
+                <p className="font-medium mb-1">Waiting for funds...</p>
                 <p>
-                  Your ETH will arrive in a few minutes. Click the refresh button above to check your balance.
+                  We&apos;re automatically checking your balance every 10 seconds.
+                  You&apos;ll see a success message when funds arrive.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Button variant="secondary" size="lg" className="w-full" onClick={handleBack}>
+          Cancel
+        </Button>
+      </div>
+    );
+  }
+
+  // Popup closed confirmation state
+  if (state === "popup-closed") {
+    return (
+      <div className="mx-auto max-w-lg p-4">
+        <div className="mb-8 text-center">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30">
+            <AlertCircle className="h-8 w-8 text-amber-600 dark:text-amber-400" />
+          </div>
+          <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">
+            Did you complete the purchase?
+          </h1>
+          <p className="mt-2 text-zinc-600 dark:text-zinc-400">
+            The MoonPay window was closed.
+          </p>
+        </div>
+
+        {/* Balance display with auto-polling indicator */}
+        <Card className="mb-6">
+          <CardContent className="py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-zinc-500 dark:text-zinc-400">Current Balance</span>
+                <span className="inline-flex items-center gap-1 rounded bg-blue-100 px-1.5 py-0.5 text-xs text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                  <RefreshCw className="h-3 w-3 animate-spin" />
+                  Checking
+                </span>
+              </div>
+              <span className="font-medium text-zinc-900 dark:text-zinc-50">
+                {isBalanceLoading ? "..." : formattedBalance}
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="mb-6 border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-900/20">
+          <CardContent className="py-4">
+            <div className="flex items-start gap-3">
+              <Clock className="h-5 w-5 flex-shrink-0 text-blue-600 dark:text-blue-400" />
+              <div className="text-sm text-blue-700 dark:text-blue-300">
+                <p>
+                  If you completed the purchase, funds may take a few minutes to arrive.
+                  We&apos;ll keep checking automatically.
                 </p>
               </div>
             </div>
@@ -409,12 +560,92 @@ export default function FundPage() {
         </Card>
 
         <div className="flex gap-3">
-          <Button variant="secondary" size="lg" className="flex-1" onClick={handleBack}>
-            Back to Options
+          <Button variant="secondary" size="lg" className="flex-1" onClick={handleDidNotComplete}>
+            No, Cancel
           </Button>
-          <Button variant="primary" size="lg" className="flex-1" onClick={handleGoToDashboard}>
+          <Button variant="primary" size="lg" className="flex-1" onClick={handleKeepWaiting}>
+            Yes, Keep Waiting
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Funds received success state
+  if (state === "funds-received") {
+    const receivedFormatted = receivedAmount
+      ? `${parseFloat(formatEther(receivedAmount)).toFixed(6)} ${activeNetwork.nativeCurrency.symbol}`
+      : "";
+
+    return (
+      <div className="mx-auto max-w-lg p-4">
+        <div className="mb-8 text-center">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
+            <CheckCircle2 className="h-8 w-8 text-green-600 dark:text-green-400" />
+          </div>
+          <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">
+            Funds Received!
+          </h1>
+          {receivedFormatted && (
+            <p className="mt-2 text-lg font-semibold text-green-600 dark:text-green-400">
+              +{receivedFormatted}
+            </p>
+          )}
+        </div>
+
+        {/* New balance display */}
+        <Card className="mb-6">
+          <CardContent className="py-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-zinc-500 dark:text-zinc-400">New Balance</span>
+              <span className="font-medium text-zinc-900 dark:text-zinc-50">
+                {formattedBalance}
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Info callout about fund source */}
+        <Card className="mb-6 border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800/50">
+          <CardContent className="py-3">
+            <div className="flex items-start gap-2">
+              <Info className="h-4 w-4 flex-shrink-0 text-zinc-500 dark:text-zinc-400 mt-0.5" />
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                Balance increase detected. This may be from MoonPay, a direct transfer, or another source.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Prompt to deploy if not deployed */}
+        {isDeployed === false && (
+          <Card className="mb-6 border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-900/20">
+            <CardContent className="py-4">
+              <div className="flex items-start gap-3">
+                <Rocket className="h-5 w-5 flex-shrink-0 text-green-600 dark:text-green-400" />
+                <div className="text-sm text-green-700 dark:text-green-300">
+                  <p className="font-medium mb-1">Ready to deploy!</p>
+                  <p>Your account is funded. Deploy it to start sending transactions.</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        <div className="flex gap-3">
+          <Button variant="secondary" size="lg" className="flex-1" onClick={handleGoToDashboard}>
             Go to Dashboard
           </Button>
+          {isDeployed === false ? (
+            <Button variant="primary" size="lg" className="flex-1" onClick={handleGoToDeploy}>
+              <Rocket className="mr-2 h-4 w-4" />
+              Deploy Account
+            </Button>
+          ) : (
+            <Button variant="primary" size="lg" className="flex-1" onClick={() => router.push("/send")}>
+              Send {activeNetwork.nativeCurrency.symbol}
+            </Button>
+          )}
         </div>
       </div>
     );
@@ -475,27 +706,25 @@ export default function FundPage() {
           </CardContent>
         </Card>
 
-        {/* Balance display */}
+        {/* Balance display with auto-polling indicator */}
         <Card className="mb-6">
           <CardContent className="py-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-zinc-500 dark:text-zinc-400">Current Balance</span>
               <div className="flex items-center gap-2">
-                <span className="font-medium text-zinc-900 dark:text-zinc-50">
-                  {isBalanceLoading ? "..." : formattedBalance}
+                <span className="text-sm text-zinc-500 dark:text-zinc-400">Current Balance</span>
+                <span className="inline-flex items-center gap-1 rounded bg-green-100 px-1.5 py-0.5 text-xs text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                  <RefreshCw className="h-3 w-3 animate-spin" />
+                  Auto-checking
                 </span>
-                <button
-                  onClick={() => refetchBalance()}
-                  className="p-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
-                >
-                  <RefreshCw className="h-4 w-4" />
-                </button>
               </div>
+              <span className="font-medium text-zinc-900 dark:text-zinc-50">
+                {isBalanceLoading ? "..." : formattedBalance}
+              </span>
             </div>
           </CardContent>
         </Card>
 
-        {/* Prompt to deploy if funded but not deployed */}
+        {/* Prompt to deploy if funded but not deployed - this won't show anymore since we transition to funds-received */}
         {isDeployed === false && balance && parseFloat(balance.balance) > 0 && (
           <Card className="mb-6 border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-900/20">
             <CardContent className="py-4">
