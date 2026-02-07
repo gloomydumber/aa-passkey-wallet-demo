@@ -109,9 +109,7 @@ export function AccountActivation({
           <div className="flex items-start gap-4">
             <CheckCircle2 className="h-8 w-8 flex-shrink-0 text-green-600 dark:text-green-400" />
             <div className="flex-1">
-              <h3 className="font-medium text-green-800 dark:text-green-200">
-                Account Activated!
-              </h3>
+              <h3 className="font-medium text-green-800 dark:text-green-200">Account Activated!</h3>
               <p className="text-sm text-green-700 dark:text-green-300">
                 Your smart account is now deployed on-chain.
               </p>
@@ -153,12 +151,8 @@ export function AccountActivation({
           <div className="flex items-start gap-4">
             <AlertCircle className="h-8 w-8 flex-shrink-0 text-red-600 dark:text-red-400" />
             <div className="flex-1">
-              <h3 className="font-medium text-red-800 dark:text-red-200">
-                Activation Failed
-              </h3>
-              <p className="mb-3 text-sm text-red-700 dark:text-red-300">
-                {error}
-              </p>
+              <h3 className="font-medium text-red-800 dark:text-red-200">Activation Failed</h3>
+              <p className="mb-3 text-sm text-red-700 dark:text-red-300">{error}</p>
               <div className="flex gap-2">
                 <Button size="sm" onClick={handleRetry}>
                   Try Again
@@ -181,9 +175,7 @@ export function AccountActivation({
         <CardContent className="flex items-center gap-4 py-4">
           <Loader2 className="h-8 w-8 animate-spin text-blue-600 dark:text-blue-400" />
           <div>
-            <h3 className="font-medium text-blue-800 dark:text-blue-200">
-              Activating Account...
-            </h3>
+            <h3 className="font-medium text-blue-800 dark:text-blue-200">Activating Account...</h3>
             <p className="text-sm text-blue-700 dark:text-blue-300">
               Please sign with your passkey to deploy your account.
             </p>

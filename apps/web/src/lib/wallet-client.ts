@@ -29,9 +29,7 @@ import { getStorageAdapter } from "./storage-adapter";
 function getPimlicoApiKey(): string {
   const apiKey = process.env.NEXT_PUBLIC_PIMLICO_API_KEY;
   if (!apiKey || apiKey === "your_pimlico_api_key_here") {
-    console.warn(
-      "Pimlico API key not configured. Set NEXT_PUBLIC_PIMLICO_API_KEY in .env.local"
-    );
+    console.warn("Pimlico API key not configured. Set NEXT_PUBLIC_PIMLICO_API_KEY in .env.local");
     return "";
   }
   return apiKey;
@@ -72,10 +70,7 @@ function getConfiguredNetwork(baseNetwork: Network): Network {
  * Get all configured networks
  */
 function getConfiguredNetworks(): Network[] {
-  return [
-    getConfiguredNetwork(sepoliaNetwork),
-    getConfiguredNetwork(arbitrumSepoliaNetwork),
-  ];
+  return [getConfiguredNetwork(sepoliaNetwork), getConfiguredNetwork(arbitrumSepoliaNetwork)];
 }
 
 /**
@@ -167,11 +162,9 @@ export function createBundlerClient(
 ) {
   const configuredNetwork = getConfiguredNetwork(network);
   const publicClient = createPublicClientForNetwork({ network: configuredNetwork });
-  return createBundlerClientForNetwork(
-    { network: configuredNetwork, publicClient },
-    viemAccount,
-    { sponsored: options?.sponsored }
-  );
+  return createBundlerClientForNetwork({ network: configuredNetwork, publicClient }, viemAccount, {
+    sponsored: options?.sponsored,
+  });
 }
 
 /**

@@ -57,7 +57,9 @@ export function NetworkSelector() {
               <div className="flex items-center gap-2">
                 <span
                   className={`h-2 w-2 rounded-full ${
-                    network.chainId === activeNetwork.chainId ? "bg-green-500" : "bg-zinc-300 dark:bg-zinc-600"
+                    network.chainId === activeNetwork.chainId
+                      ? "bg-green-500"
+                      : "bg-zinc-300 dark:bg-zinc-600"
                   }`}
                 />
                 <span className="text-zinc-900 dark:text-zinc-50">{network.displayName}</span>

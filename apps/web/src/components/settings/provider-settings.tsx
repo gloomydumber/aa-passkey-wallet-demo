@@ -23,9 +23,7 @@ function ProviderRow({ icon, label, value }: ProviderRowProps) {
         {icon}
         <span>{label}</span>
       </div>
-      <span className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
-        {value}
-      </span>
+      <span className="text-sm font-medium text-zinc-900 dark:text-zinc-50">{value}</span>
     </div>
   );
 }
@@ -41,11 +39,7 @@ export function ProviderSettings() {
           label="Network"
           value={activeNetwork.displayName}
         />
-        <ProviderRow
-          icon={<Truck className="h-4 w-4" />}
-          label="Bundler"
-          value="Pimlico"
-        />
+        <ProviderRow icon={<Truck className="h-4 w-4" />} label="Bundler" value="Pimlico" />
         <ProviderRow
           icon={<CreditCard className="h-4 w-4" />}
           label="Paymaster"

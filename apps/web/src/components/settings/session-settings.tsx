@@ -16,12 +16,8 @@ import {
 import { Info } from "lucide-react";
 
 export function SessionSettings() {
-  const {
-    inactivityTimeout,
-    maxSessionDuration,
-    setInactivityTimeout,
-    setMaxSessionDuration,
-  } = useSettingsStore();
+  const { inactivityTimeout, maxSessionDuration, setInactivityTimeout, setMaxSessionDuration } =
+    useSettingsStore();
 
   return (
     <Card>

@@ -118,10 +118,10 @@ export function ConfirmSheet({
             {/* Total */}
             <div className="border-t border-zinc-200 pt-3 dark:border-zinc-700">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                  Total
-                </span>
-                <span className={`font-medium ${hasInsufficientBalance ? "text-red-600 dark:text-red-400" : "text-zinc-900 dark:text-zinc-50"}`}>
+                <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Total</span>
+                <span
+                  className={`font-medium ${hasInsufficientBalance ? "text-red-600 dark:text-red-400" : "text-zinc-900 dark:text-zinc-50"}`}
+                >
                   {formatGas(totalRequired)} {symbol}
                 </span>
               </div>
@@ -133,9 +133,7 @@ export function ConfirmSheet({
             <div className="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-900/50 dark:bg-red-900/20">
               <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-600 dark:text-red-500" />
               <div className="text-sm">
-                <p className="font-medium text-red-800 dark:text-red-200">
-                  Insufficient Balance
-                </p>
+                <p className="font-medium text-red-800 dark:text-red-200">Insufficient Balance</p>
                 <p className="text-red-700 dark:text-red-300/80">
                   Total cost exceeds your balance. Reduce the amount or add more funds.
                 </p>
@@ -148,9 +146,7 @@ export function ConfirmSheet({
             <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-900/50 dark:bg-amber-900/20">
               <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-600 dark:text-amber-500" />
               <div className="text-sm">
-                <p className="font-medium text-amber-800 dark:text-amber-200">
-                  First Transaction
-                </p>
+                <p className="font-medium text-amber-800 dark:text-amber-200">First Transaction</p>
                 <p className="text-amber-700 dark:text-amber-300/80">
                   This will deploy your smart account. Gas costs include deployment fees.
                 </p>
@@ -170,12 +166,7 @@ export function ConfirmSheet({
             <Fingerprint className="h-5 w-5" />
             {isSigning ? "Signing..." : "Sign with Passkey"}
           </Button>
-          <Button
-            variant="ghost"
-            className="w-full"
-            onClick={onCancel}
-            disabled={isSigning}
-          >
+          <Button variant="ghost" className="w-full" onClick={onCancel} disabled={isSigning}>
             Cancel
           </Button>
         </CardFooter>

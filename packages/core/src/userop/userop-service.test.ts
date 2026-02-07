@@ -100,7 +100,8 @@ describe("UserOp utilities", () => {
   });
 
   describe("result helpers", () => {
-    const userOpHash = "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef" as const;
+    const userOpHash =
+      "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef" as const;
     const txHash = "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890" as const;
 
     it("should create pending result", () => {

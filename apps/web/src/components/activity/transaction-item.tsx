@@ -42,9 +42,12 @@ function formatRelativeTime(timestamp: number): string {
 function formatAmount(value: string, decimals?: number, symbol?: string): string {
   if (!value || value === "0") return "";
 
-  const formatted = decimals !== undefined
-    ? (Number(value) / 10 ** decimals).toFixed(4).replace(/\.?0+$/, "")
-    : parseFloat(formatEther(BigInt(value))).toFixed(6).replace(/\.?0+$/, "");
+  const formatted =
+    decimals !== undefined
+      ? (Number(value) / 10 ** decimals).toFixed(4).replace(/\.?0+$/, "")
+      : parseFloat(formatEther(BigInt(value)))
+          .toFixed(6)
+          .replace(/\.?0+$/, "");
 
   const unit = symbol ?? "ETH";
   return `${formatted} ${unit}`;
@@ -89,14 +92,11 @@ export function TransactionItem({
   explorerUrl,
   nativeSymbol = "ETH",
 }: TransactionItemProps) {
-  const explorerLink = tx.txHash
-    ? `${explorerUrl}/tx/${tx.txHash}`
-    : undefined;
+  const explorerLink = tx.txHash ? `${explorerUrl}/tx/${tx.txHash}` : undefined;
 
   const symbol = tx.tokenSymbol ?? nativeSymbol;
-  const amount = tx.type === "account_deploy"
-    ? ""
-    : formatAmount(tx.value, tx.tokenDecimals, symbol);
+  const amount =
+    tx.type === "account_deploy" ? "" : formatAmount(tx.value, tx.tokenDecimals, symbol);
 
   return (
     <div className="flex items-center gap-3 rounded-lg px-3 py-3 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
@@ -136,9 +136,7 @@ export function TransactionItem({
       {/* Amount + Status */}
       <div className="flex shrink-0 items-center gap-2">
         {amount && (
-          <span className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
-            -{amount}
-          </span>
+          <span className="text-sm font-medium text-zinc-900 dark:text-zinc-50">-{amount}</span>
         )}
         <StatusIcon status={tx.status} />
       </div>

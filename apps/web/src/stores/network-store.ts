@@ -47,9 +47,7 @@ export const useNetworkStore = create<NetworkState>()(
       merge: (persisted, current) => {
         const persistedState = persisted as { activeChainId?: number } | undefined;
         if (persistedState?.activeChainId) {
-          const network = current.networks.find(
-            (n) => n.chainId === persistedState.activeChainId
-          );
+          const network = current.networks.find((n) => n.chainId === persistedState.activeChainId);
           if (network) {
             return { ...current, activeNetwork: network };
           }

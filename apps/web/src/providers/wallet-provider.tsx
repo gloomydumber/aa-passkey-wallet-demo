@@ -8,7 +8,12 @@
 
 import { createContext, useContext, useEffect, useCallback, useRef, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { getPasskeyService, getNetworkManager, cleanupWalletClient, createSmartAccountAdapter } from "@/lib/wallet-client";
+import {
+  getPasskeyService,
+  getNetworkManager,
+  cleanupWalletClient,
+  createSmartAccountAdapter,
+} from "@/lib/wallet-client";
 import { useWalletStore } from "@/stores/wallet-store";
 import { useNetworkStore } from "@/stores/network-store";
 import type { PasskeyServiceEvent } from "@aa-wallet/passkey";
@@ -24,7 +29,8 @@ interface WalletProviderProps {
 }
 
 export function WalletProvider({ children }: WalletProviderProps) {
-  const { isInitialized, setInitialized, setSession, setCredential, setAccount, logout, reset } = useWalletStore();
+  const { isInitialized, setInitialized, setSession, setCredential, setAccount, logout, reset } =
+    useWalletStore();
   const { activeNetwork } = useNetworkStore();
   const pathname = usePathname();
   const router = useRouter();
@@ -37,9 +43,11 @@ export function WalletProvider({ children }: WalletProviderProps) {
     if (now - lastActivityRef.current < 1000) return;
     lastActivityRef.current = now;
 
-    getPasskeyService().recordActivity().catch((err) => {
-      console.error("Failed to record activity:", err);
-    });
+    getPasskeyService()
+      .recordActivity()
+      .catch((err) => {
+        console.error("Failed to record activity:", err);
+      });
   }, []);
 
   // Record activity on route changes
@@ -97,12 +105,8 @@ export function WalletProvider({ children }: WalletProviderProps) {
       switch (event.type) {
         case "session_started":
           // Session started, update state
-          getPasskeyService()
-            .getSession()
-            .then(setSession);
-          getPasskeyService()
-            .getCredential(event.credentialId)
-            .then(setCredential);
+          getPasskeyService().getSession().then(setSession);
+          getPasskeyService().getCredential(event.credentialId).then(setCredential);
           break;
 
         case "session_ended":
@@ -207,11 +211,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
     isReady: isInitialized,
   };
 
-  return (
-    <WalletContext.Provider value={value}>
-      {children}
-    </WalletContext.Provider>
-  );
+  return <WalletContext.Provider value={value}>{children}</WalletContext.Provider>;
 }
 
 export function useWallet() {

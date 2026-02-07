@@ -46,9 +46,7 @@ function ThemeButton({ label, icon, isActive, onClick }: ThemeButtonProps) {
       <span
         className={clsx(
           "text-sm font-medium",
-          isActive
-            ? "text-zinc-900 dark:text-zinc-50"
-            : "text-zinc-600 dark:text-zinc-400"
+          isActive ? "text-zinc-900 dark:text-zinc-50" : "text-zinc-600 dark:text-zinc-400"
         )}
       >
         {label}

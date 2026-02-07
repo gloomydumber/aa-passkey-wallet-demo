@@ -18,9 +18,6 @@ export async function POST() {
     });
   } catch (error) {
     console.error("Failed to generate challenge:", error);
-    return NextResponse.json(
-      { error: "Failed to generate challenge" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to generate challenge" }, { status: 500 });
   }
 }

@@ -12,7 +12,11 @@ import { parseEther, formatEther } from "viem";
 import type { SmartAccount } from "viem/account-abstraction";
 import { buildTransferCall } from "@aa-wallet/core";
 import type { Address, SmartAccountInstance, Network } from "@aa-wallet/types";
-import { createBundlerClient, createSmartAccountAdapter, getPublicClient } from "@/lib/wallet-client";
+import {
+  createBundlerClient,
+  createSmartAccountAdapter,
+  getPublicClient,
+} from "@/lib/wallet-client";
 import { getRequiredPrefund } from "permissionless/utils";
 import { useActivityStore } from "@/stores/activity-store";
 
@@ -348,9 +352,7 @@ export function useSendTransaction({
 
       // Extract actual gas cost from the receipt
       // The receipt contains actualGasCost from UserOperationEvent
-      const actualGasCost = receipt.actualGasCost
-        ? BigInt(receipt.actualGasCost)
-        : undefined;
+      const actualGasCost = receipt.actualGasCost ? BigInt(receipt.actualGasCost) : undefined;
 
       setResult({
         userOpHash,

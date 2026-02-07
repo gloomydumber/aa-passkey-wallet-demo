@@ -38,7 +38,7 @@ import {
   CircleDollarSign,
 } from "lucide-react";
 import type { SmartAccount } from "viem/account-abstraction";
-import { formatEther, createPublicClient, http } from "viem";
+import { formatEther } from "viem";
 import { sepolia, arbitrumSepolia } from "viem/chains";
 import { getRequiredPrefund } from "permissionless";
 
@@ -63,7 +63,7 @@ export default function DeployPage() {
 
   // Separate gas estimates for each deployment method
   // Each deployment option uses its matching estimation method
-  const [sponsoredGasEstimate, setSponsoredGasEstimate] = useState<bigint | null>(null);
+  const [_sponsoredGasEstimate, setSponsoredGasEstimate] = useState<bigint | null>(null);
   const [selfFundedGasEstimate, setSelfFundedGasEstimate] = useState<bigint | null>(null);
   const [isEstimatingGas, setIsEstimatingGas] = useState(false);
 
@@ -76,7 +76,11 @@ export default function DeployPage() {
     maxPriorityFeePerGas: bigint;
   } | null>(null);
 
-  const { balance, isLoading: isBalanceLoading, refetch: refetchBalance } = useBalance({
+  const {
+    balance,
+    isLoading: isBalanceLoading,
+    refetch: refetchBalance,
+  } = useBalance({
     address: accountAddress,
   });
 
@@ -111,13 +115,17 @@ export default function DeployPage() {
   // Check if user has enough balance for self-funded deployment
   // Uses self-funded estimation (non-sponsored) which matches actual deployment
   // Add 10% buffer for gas price fluctuations
-  const requiredBalance = selfFundedGasEstimate ? (selfFundedGasEstimate * BigInt(110)) / BigInt(100) : BigInt(0);
-  const hasEnoughForPaidDeploy = selfFundedGasEstimate !== null && !isEstimatingGas && balanceWei >= requiredBalance;
+  const requiredBalance = selfFundedGasEstimate
+    ? (selfFundedGasEstimate * BigInt(110)) / BigInt(100)
+    : BigInt(0);
+  const hasEnoughForPaidDeploy =
+    selfFundedGasEstimate !== null && !isEstimatingGas && balanceWei >= requiredBalance;
 
   // Format required balance (with buffer) for display
-  const formattedRequiredBalance = requiredBalance > BigInt(0)
-    ? `${parseFloat(formatEther(requiredBalance)).toFixed(6)} ${activeNetwork.nativeCurrency.symbol}`
-    : null;
+  const formattedRequiredBalance =
+    requiredBalance > BigInt(0)
+      ? `${parseFloat(formatEther(requiredBalance)).toFixed(6)} ${activeNetwork.nativeCurrency.symbol}`
+      : null;
 
   // Get viem chain from network
   const getViemChain = useCallback(() => {
@@ -159,8 +167,10 @@ export default function DeployPage() {
       const gasPrices: GasPriceResponse = gasPriceResult.result;
 
       // Use "fast" tier with 10% buffer for reliability
-      const bufferedMaxFeePerGas = (BigInt(gasPrices.fast.maxFeePerGas) * BigInt(110)) / BigInt(100);
-      const maxPriorityFeePerGas = (BigInt(gasPrices.fast.maxPriorityFeePerGas) * BigInt(110)) / BigInt(100);
+      const bufferedMaxFeePerGas =
+        (BigInt(gasPrices.fast.maxFeePerGas) * BigInt(110)) / BigInt(100);
+      const maxPriorityFeePerGas =
+        (BigInt(gasPrices.fast.maxPriorityFeePerGas) * BigInt(110)) / BigInt(100);
 
       // Helper to calculate requiredPrefund from gas estimate
       //
@@ -170,7 +180,11 @@ export default function DeployPage() {
       // estimate of 515,516 (actual gas used: 357,794).
       // The bundler's eth_estimateUserOperationGas is accurate and sufficient.
 
-      const calculatePrefund = (estimate: { callGasLimit: bigint; verificationGasLimit: bigint; preVerificationGas: bigint }) => {
+      const calculatePrefund = (estimate: {
+        callGasLimit: bigint;
+        verificationGasLimit: bigint;
+        preVerificationGas: bigint;
+      }) => {
         const userOpForPrefund = {
           sender: accountAddress,
           nonce: BigInt(0),
@@ -194,7 +208,9 @@ export default function DeployPage() {
       // Always runs - works even with 0 balance
       if (paymasterAvailable) {
         try {
-          const sponsoredClient = createBundlerClient(activeNetwork, viemAccount, { sponsored: true });
+          const sponsoredClient = createBundlerClient(activeNetwork, viemAccount, {
+            sponsored: true,
+          });
           const estimate = await sponsoredClient.estimateUserOperationGas({
             account: viemAccount,
             calls: [{ to: accountAddress, value: BigInt(0), data: "0x" as `0x${string}` }],
@@ -221,7 +237,9 @@ export default function DeployPage() {
       // Always runs with stateOverride to make estimation independent of actual balance
       // This lets users see how much ETH they need regardless of current balance
       try {
-        const nonSponsoredClient = createBundlerClient(activeNetwork, viemAccount, { sponsored: false });
+        const nonSponsoredClient = createBundlerClient(activeNetwork, viemAccount, {
+          sponsored: false,
+        });
 
         // Always use stateOverride to simulate sufficient balance for estimation
         // This decouples gas estimation from actual balance - we want to know
@@ -362,12 +380,14 @@ export default function DeployPage() {
 
       // Use "fast" tier with 10% buffer for reliability
       const freshMaxFeePerGas = (BigInt(gasPrices.fast.maxFeePerGas) * BigInt(110)) / BigInt(100);
-      const freshMaxPriorityFeePerGas = (BigInt(gasPrices.fast.maxPriorityFeePerGas) * BigInt(110)) / BigInt(100);
+      const freshMaxPriorityFeePerGas =
+        (BigInt(gasPrices.fast.maxPriorityFeePerGas) * BigInt(110)) / BigInt(100);
 
       // Calculate what the prefund should be with fresh gas price
-      const totalGas = selfFundedGasParams.callGasLimit +
-                       selfFundedGasParams.verificationGasLimit +
-                       selfFundedGasParams.preVerificationGas;
+      const totalGas =
+        selfFundedGasParams.callGasLimit +
+        selfFundedGasParams.verificationGasLimit +
+        selfFundedGasParams.preVerificationGas;
       const calculatedPrefund = totalGas * freshMaxFeePerGas;
 
       console.log("Self-funded deployment:", {
@@ -439,7 +459,14 @@ export default function DeployPage() {
       }
       setState("error");
     }
-  }, [account, accountAddress, activeNetwork, hasEnoughForPaidDeploy, balanceWei, selfFundedGasParams]);
+  }, [
+    account,
+    accountAddress,
+    activeNetwork,
+    hasEnoughForPaidDeploy,
+    balanceWei,
+    selfFundedGasParams,
+  ]);
 
   const handleRetry = useCallback(() => {
     setState("idle");
@@ -502,9 +529,7 @@ export default function DeployPage() {
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
             <CheckCircle2 className="h-8 w-8 text-green-600 dark:text-green-400" />
           </div>
-          <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">
-            Account Deployed!
-          </h1>
+          <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">Account Deployed!</h1>
           <p className="mt-2 text-zinc-600 dark:text-zinc-400">
             Your smart account is now deployed on-chain.
           </p>
@@ -542,9 +567,7 @@ export default function DeployPage() {
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
             <AlertCircle className="h-8 w-8 text-red-600 dark:text-red-400" />
           </div>
-          <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">
-            Deployment Failed
-          </h1>
+          <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">Deployment Failed</h1>
           <p className="mt-2 text-zinc-600 dark:text-zinc-400">{error}</p>
         </div>
 
@@ -707,7 +730,8 @@ export default function DeployPage() {
                   <div className="text-sm text-green-700 dark:text-green-300">
                     <p>
                       <strong>Tip:</strong> Free deployment is recommended on testnet.
-                      {hasBalance && ` Your ${formattedBalance} will be available for transactions after deployment.`}
+                      {hasBalance &&
+                        ` Your ${formattedBalance} will be available for transactions after deployment.`}
                     </p>
                   </div>
                 </div>
@@ -717,11 +741,7 @@ export default function DeployPage() {
 
           {/* Back Button */}
           <div className="mt-8">
-            <Button
-              variant="ghost"
-              className="w-full text-zinc-500"
-              onClick={handleGoToDashboard}
-            >
+            <Button variant="ghost" className="w-full text-zinc-500" onClick={handleGoToDashboard}>
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Dashboard
             </Button>
@@ -747,9 +767,7 @@ export default function DeployPage() {
                   <Wallet className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-semibold text-zinc-900 dark:text-zinc-50">
-                    Self-funded
-                  </h3>
+                  <h3 className="font-semibold text-zinc-900 dark:text-zinc-50">Self-funded</h3>
                   <p className="text-sm text-zinc-600 dark:text-zinc-400">
                     Pay gas from your {activeNetwork.nativeCurrency.symbol} balance
                   </p>
@@ -761,7 +779,8 @@ export default function DeployPage() {
                         <span className="group relative">
                           <Info className="h-3.5 w-3.5 cursor-help text-zinc-400" />
                           <span className="pointer-events-none absolute bottom-full left-0 z-10 mb-1.5 w-52 rounded-lg bg-zinc-800 px-3 py-2 text-xs text-zinc-100 opacity-0 shadow-lg transition-opacity group-hover:opacity-100 dark:bg-zinc-700">
-                            Base gas cost calculated using EntryPoint&apos;s requiredPrefund formula.
+                            Base gas cost calculated using EntryPoint&apos;s requiredPrefund
+                            formula.
                           </span>
                         </span>
                       </span>
@@ -771,7 +790,7 @@ export default function DeployPage() {
                             <Loader2 className="h-3 w-3 animate-spin" />
                           </span>
                         ) : (
-                          formattedSelfFundedEstimate ?? "--"
+                          (formattedSelfFundedEstimate ?? "--")
                         )}
                       </span>
                     </div>
@@ -785,13 +804,15 @@ export default function DeployPage() {
                           </span>
                         </span>
                       </span>
-                      <span className={`font-medium ${hasEnoughForPaidDeploy ? "text-green-600 dark:text-green-400" : "text-amber-600 dark:text-amber-400"}`}>
+                      <span
+                        className={`font-medium ${hasEnoughForPaidDeploy ? "text-green-600 dark:text-green-400" : "text-amber-600 dark:text-amber-400"}`}
+                      >
                         {isEstimatingGas ? (
                           <span className="flex items-center gap-1 text-zinc-400">
                             <Loader2 className="h-3 w-3 animate-spin" />
                           </span>
                         ) : (
-                          formattedRequiredBalance ?? "--"
+                          (formattedRequiredBalance ?? "--")
                         )}
                       </span>
                     </div>
@@ -845,12 +866,7 @@ export default function DeployPage() {
 
           {/* Suggest funding if insufficient balance */}
           {!hasEnoughForPaidDeploy && (
-            <Button
-              variant="secondary"
-              size="lg"
-              className="mt-3 w-full"
-              onClick={handleGoToFund}
-            >
+            <Button variant="secondary" size="lg" className="mt-3 w-full" onClick={handleGoToFund}>
               <Wallet className="mr-2 h-4 w-4" />
               Fund Your Wallet
             </Button>
@@ -882,9 +898,7 @@ export default function DeployPage() {
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <h3 className="font-semibold text-zinc-900 dark:text-zinc-50">
-                      Self-funded
-                    </h3>
+                    <h3 className="font-semibold text-zinc-900 dark:text-zinc-50">Self-funded</h3>
                     <span className="rounded bg-zinc-200 px-2 py-0.5 text-xs font-medium text-zinc-600 dark:bg-zinc-700 dark:text-zinc-400">
                       Coming Soon
                     </span>

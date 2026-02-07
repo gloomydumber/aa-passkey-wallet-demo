@@ -15,7 +15,15 @@ import { Button } from "@/components/ui/button";
 import { useWalletStore } from "@/stores/wallet-store";
 import { useNetworkStore } from "@/stores/network-store";
 import { useBalance, useAccountStatus } from "@/hooks";
-import { isMoonPayAvailable, isMoonPaySupportedNetwork, getMoonPayUnsupportedMessage, getSignedMoonPayUrl, openMoonPayPopup, getMoonPayInfo, getMoonPayQuote } from "@/lib/moonpay";
+import {
+  isMoonPayAvailable,
+  isMoonPaySupportedNetwork,
+  getMoonPayUnsupportedMessage,
+  getSignedMoonPayUrl,
+  openMoonPayPopup,
+  getMoonPayInfo,
+  getMoonPayQuote,
+} from "@/lib/moonpay";
 import { formatEther } from "viem";
 import {
   CreditCard,
@@ -32,7 +40,13 @@ import {
   Clock,
 } from "lucide-react";
 
-type FundState = "idle" | "onramp-confirm" | "onramp-waiting" | "popup-closed" | "funds-received" | "receive";
+type FundState =
+  | "idle"
+  | "onramp-confirm"
+  | "onramp-waiting"
+  | "popup-closed"
+  | "funds-received"
+  | "receive";
 
 // Polling and timeout configuration
 const BALANCE_POLL_INTERVAL = 10000; // 10 seconds
@@ -70,7 +84,11 @@ export default function FundPage() {
   const popupRef = useRef<Window | null>(null);
   const waitingStartTimeRef = useRef<number | null>(null);
 
-  const { balance, isLoading: isBalanceLoading, refetch: refetchBalance } = useBalance({
+  const {
+    balance,
+    isLoading: isBalanceLoading,
+    refetch: refetchBalance,
+  } = useBalance({
     address: accountAddress,
   });
 
@@ -97,9 +115,10 @@ export default function FundPage() {
     AMOUNT_OPTIONS.forEach(async (amount) => {
       try {
         const quote = await getMoonPayQuote(amount, activeNetwork);
-        const ethAmount = typeof quote.quoteCurrencyAmount === "number"
-          ? quote.quoteCurrencyAmount.toFixed(6)
-          : parseFloat(quote.quoteCurrencyAmount).toFixed(6);
+        const ethAmount =
+          typeof quote.quoteCurrencyAmount === "number"
+            ? quote.quoteCurrencyAmount.toFixed(6)
+            : parseFloat(quote.quoteCurrencyAmount).toFixed(6);
 
         setQuotes((prev) => ({
           ...prev,
@@ -137,7 +156,10 @@ export default function FundPage() {
 
   // When funds are received, calculate amount and transition to success state
   useEffect(() => {
-    if (fundsReceived && (state === "onramp-waiting" || state === "receive" || state === "popup-closed")) {
+    if (
+      fundsReceived &&
+      (state === "onramp-waiting" || state === "receive" || state === "popup-closed")
+    ) {
       const currentBalance = BigInt(balance!.balance);
       const received = currentBalance - (initialBalance ?? BigInt(0));
       setReceivedAmount(received);
@@ -320,9 +342,7 @@ export default function FundPage() {
                         : "border-zinc-200 hover:border-zinc-300 dark:border-zinc-700 dark:hover:border-zinc-600"
                     }`}
                   >
-                    <p className="font-semibold text-zinc-900 dark:text-zinc-50">
-                      ${amount}
-                    </p>
+                    <p className="font-semibold text-zinc-900 dark:text-zinc-50">${amount}</p>
                     <p className="text-xs text-zinc-500 dark:text-zinc-400">
                       {isLoading ? (
                         <span className="inline-flex items-center gap-1">
@@ -331,9 +351,11 @@ export default function FundPage() {
                         </span>
                       ) : activeNetwork.isTestnet && ethAmount !== "N/A" ? (
                         <>
-                          <span className="line-through opacity-50">{ethAmount}</span>
-                          {" "}
-                          <span>≈ {(parseFloat(ethAmount) / 100).toFixed(6)} {activeNetwork.nativeCurrency.symbol}</span>
+                          <span className="line-through opacity-50">{ethAmount}</span>{" "}
+                          <span>
+                            ≈ {(parseFloat(ethAmount) / 100).toFixed(6)}{" "}
+                            {activeNetwork.nativeCurrency.symbol}
+                          </span>
                         </>
                       ) : (
                         `≈ ${ethAmount} ${activeNetwork.nativeCurrency.symbol}`
@@ -358,9 +380,12 @@ export default function FundPage() {
                 <div className="text-sm text-amber-700 dark:text-amber-300">
                   <p className="font-medium mb-1">Deployment Cost</p>
                   <p>
-                    Your smart account is not yet deployed. To use "Deploy with ETH",
-                    you need at least <strong>{MIN_ETH_FOR_DEPLOYMENT} {activeNetwork.nativeCurrency.symbol}</strong>.
-                    Make sure to fund enough to cover the deployment cost.
+                    Your smart account is not yet deployed. To use "Deploy with ETH", you need at
+                    least{" "}
+                    <strong>
+                      {MIN_ETH_FOR_DEPLOYMENT} {activeNetwork.nativeCurrency.symbol}
+                    </strong>
+                    . Make sure to fund enough to cover the deployment cost.
                   </p>
                 </div>
               </div>
@@ -371,9 +396,7 @@ export default function FundPage() {
         {/* Wallet address display */}
         <Card className="mb-6">
           <CardContent className="py-4">
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-1">
-              Funds will be sent to:
-            </p>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-1">Funds will be sent to:</p>
             <p className="font-mono text-sm text-zinc-900 dark:text-zinc-50 break-all bg-zinc-100 dark:bg-zinc-800 p-2 rounded">
               {accountAddress}
             </p>
@@ -406,7 +429,15 @@ export default function FundPage() {
                   <p>
                     MoonPay sandbox delivers only <strong>1/100</strong> of the quoted amount.
                     {!isQuoteLoading && estimatedEth !== "N/A" && (
-                      <> You will receive approximately <strong>{(parseFloat(estimatedEth) / 100).toFixed(6)} {activeNetwork.nativeCurrency.symbol}</strong> instead of {estimatedEth} {activeNetwork.nativeCurrency.symbol}.</>
+                      <>
+                        {" "}
+                        You will receive approximately{" "}
+                        <strong>
+                          {(parseFloat(estimatedEth) / 100).toFixed(6)}{" "}
+                          {activeNetwork.nativeCurrency.symbol}
+                        </strong>{" "}
+                        instead of {estimatedEth} {activeNetwork.nativeCurrency.symbol}.
+                      </>
                     )}
                   </p>
                 </div>
@@ -496,8 +527,8 @@ export default function FundPage() {
               <div className="text-sm text-blue-700 dark:text-blue-300">
                 <p className="font-medium mb-1">Waiting for funds...</p>
                 <p>
-                  We&apos;re automatically checking your balance every 10 seconds.
-                  You&apos;ll see a success message when funds arrive.
+                  We&apos;re automatically checking your balance every 10 seconds. You&apos;ll see a
+                  success message when funds arrive.
                 </p>
               </div>
             </div>
@@ -522,9 +553,7 @@ export default function FundPage() {
           <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">
             Did you complete the purchase?
           </h1>
-          <p className="mt-2 text-zinc-600 dark:text-zinc-400">
-            The MoonPay window was closed.
-          </p>
+          <p className="mt-2 text-zinc-600 dark:text-zinc-400">The MoonPay window was closed.</p>
         </div>
 
         {/* Balance display with auto-polling indicator */}
@@ -551,8 +580,8 @@ export default function FundPage() {
               <Clock className="h-5 w-5 flex-shrink-0 text-blue-600 dark:text-blue-400" />
               <div className="text-sm text-blue-700 dark:text-blue-300">
                 <p>
-                  If you completed the purchase, funds may take a few minutes to arrive.
-                  We&apos;ll keep checking automatically.
+                  If you completed the purchase, funds may take a few minutes to arrive. We&apos;ll
+                  keep checking automatically.
                 </p>
               </div>
             </div>
@@ -583,9 +612,7 @@ export default function FundPage() {
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
             <CheckCircle2 className="h-8 w-8 text-green-600 dark:text-green-400" />
           </div>
-          <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">
-            Funds Received!
-          </h1>
+          <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">Funds Received!</h1>
           {receivedFormatted && (
             <p className="mt-2 text-lg font-semibold text-green-600 dark:text-green-400">
               +{receivedFormatted}
@@ -611,7 +638,8 @@ export default function FundPage() {
             <div className="flex items-start gap-2">
               <Info className="h-4 w-4 flex-shrink-0 text-zinc-500 dark:text-zinc-400 mt-0.5" />
               <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                Balance increase detected. This may be from MoonPay, a direct transfer, or another source.
+                Balance increase detected. This may be from MoonPay, a direct transfer, or another
+                source.
               </p>
             </div>
           </CardContent>
@@ -642,7 +670,12 @@ export default function FundPage() {
               Deploy Account
             </Button>
           ) : (
-            <Button variant="primary" size="lg" className="flex-1" onClick={() => router.push("/send")}>
+            <Button
+              variant="primary"
+              size="lg"
+              className="flex-1"
+              onClick={() => router.push("/send")}
+            >
               Send {activeNetwork.nativeCurrency.symbol}
             </Button>
           )}
@@ -663,7 +696,8 @@ export default function FundPage() {
             Receive {activeNetwork.nativeCurrency.symbol}
           </h1>
           <p className="mt-2 text-zinc-600 dark:text-zinc-400">
-            Send {activeNetwork.nativeCurrency.symbol} from another wallet or exchange to this address.
+            Send {activeNetwork.nativeCurrency.symbol} from another wallet or exchange to this
+            address.
           </p>
         </div>
 
@@ -699,7 +733,8 @@ export default function FundPage() {
               <div className="text-sm text-blue-700 dark:text-blue-300">
                 <p className="font-medium mb-1">Network: {activeNetwork.displayName}</p>
                 <p>
-                  Make sure you are sending on the correct network. Funds sent on the wrong network may be lost.
+                  Make sure you are sending on the correct network. Funds sent on the wrong network
+                  may be lost.
                 </p>
               </div>
             </div>
@@ -766,9 +801,7 @@ export default function FundPage() {
         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
           <ArrowDownToLine className="h-8 w-8 text-blue-600 dark:text-blue-400" />
         </div>
-        <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">
-          Fund Your Wallet
-        </h1>
+        <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">Fund Your Wallet</h1>
         <p className="mt-2 text-zinc-600 dark:text-zinc-400">
           Add {activeNetwork.nativeCurrency.symbol} to your wallet to start using it.
         </p>
@@ -821,9 +854,7 @@ export default function FundPage() {
               <CreditCard className="h-6 w-6 text-blue-600 dark:text-blue-400" />
             </div>
             <div className="flex-1">
-              <h3 className="font-semibold text-zinc-900 dark:text-zinc-50">
-                Buy with Card
-              </h3>
+              <h3 className="font-semibold text-zinc-900 dark:text-zinc-50">Buy with Card</h3>
               <p className="text-sm text-zinc-600 dark:text-zinc-400">
                 Purchase {activeNetwork.nativeCurrency.symbol} via MoonPay
               </p>
@@ -869,11 +900,7 @@ export default function FundPage() {
 
       {/* Back Button */}
       <div className="mt-8">
-        <Button
-          variant="ghost"
-          className="w-full text-zinc-500"
-          onClick={handleGoToDashboard}
-        >
+        <Button variant="ghost" className="w-full text-zinc-500" onClick={handleGoToDashboard}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Dashboard
         </Button>

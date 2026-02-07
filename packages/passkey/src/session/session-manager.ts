@@ -208,8 +208,7 @@ export class SessionManager {
       clearTimeout(this.inactivityTimer);
     }
 
-    const timeUntilInactivity =
-      session.lastActivity + this.config.inactivityTimeout - Date.now();
+    const timeUntilInactivity = session.lastActivity + this.config.inactivityTimeout - Date.now();
     if (timeUntilInactivity > 0) {
       this.inactivityTimer = setTimeout(async () => {
         await this.endSession();

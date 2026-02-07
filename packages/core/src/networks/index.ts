@@ -11,4 +11,8 @@ export {
   getNetworkByName,
 } from "./supported-networks";
 
-export { NetworkManager, type NetworkManagerConfig, type NetworkChangeListener } from "./network-manager";
+export {
+  NetworkManager,
+  type NetworkManagerConfig,
+  type NetworkChangeListener,
+} from "./network-manager";

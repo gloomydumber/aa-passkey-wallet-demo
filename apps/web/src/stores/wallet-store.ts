@@ -5,7 +5,12 @@
  */
 
 import { create } from "zustand";
-import type { SmartAccountInstance, PasskeyCredential, SessionState, Address } from "@aa-wallet/types";
+import type {
+  SmartAccountInstance,
+  PasskeyCredential,
+  SessionState,
+  Address,
+} from "@aa-wallet/types";
 
 interface WalletState {
   // State
@@ -25,7 +30,7 @@ interface WalletState {
   setSession: (session: SessionState | null) => void;
   setError: (error: string | null) => void;
   logout: () => void; // Clears session but keeps isInitialized
-  reset: () => void;  // Full reset (only for unmount)
+  reset: () => void; // Full reset (only for unmount)
 }
 
 const initialState = {

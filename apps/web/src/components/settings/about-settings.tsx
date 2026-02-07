@@ -37,9 +37,7 @@ export function AboutSettings() {
       <CardContent className="space-y-4">
         <div className="flex items-center justify-between">
           <span className="text-sm text-zinc-600 dark:text-zinc-400">Version</span>
-          <span className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
-            {APP_VERSION}
-          </span>
+          <span className="text-sm font-medium text-zinc-900 dark:text-zinc-50">{APP_VERSION}</span>
         </div>
 
         <div className="flex gap-4">
@@ -47,7 +45,8 @@ export function AboutSettings() {
         </div>
 
         <p className="text-xs text-zinc-500 dark:text-zinc-400">
-          AA Passkey Wallet is an open-source project demonstrating Account Abstraction with Passkey authentication.
+          AA Passkey Wallet is an open-source project demonstrating Account Abstraction with Passkey
+          authentication.
         </p>
       </CardContent>
     </Card>

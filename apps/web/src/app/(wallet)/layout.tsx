@@ -46,9 +46,5 @@ export default function WalletLayout({ children }: WalletLayoutProps) {
     return null;
   }
 
-  return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
-      {children}
-    </div>
-  );
+  return <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">{children}</div>;
 }

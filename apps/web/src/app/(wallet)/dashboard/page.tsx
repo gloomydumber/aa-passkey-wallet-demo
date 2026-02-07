@@ -23,7 +23,11 @@ export default function DashboardPage() {
   const { accountAddress, credential, logout } = useWalletStore();
   const { activeNetwork } = useNetworkStore();
 
-  const { balance, isLoading: isBalanceLoading, refetch: refetchBalance } = useBalance({
+  const {
+    balance,
+    isLoading: isBalanceLoading,
+    refetch: refetchBalance,
+  } = useBalance({
     address: accountAddress,
   });
 
@@ -54,10 +58,7 @@ export default function DashboardPage() {
       {/* Account Card */}
       {accountAddress && (
         <div className="mb-4">
-          <AccountCard
-            address={accountAddress}
-            explorerUrl={activeNetwork.explorerUrl}
-          />
+          <AccountCard address={accountAddress} explorerUrl={activeNetwork.explorerUrl} />
           {/* Show deploy button if not deployed */}
           {isDeployed === false && (
             <div className="mt-2">
@@ -130,12 +131,7 @@ export default function DashboardPage() {
           Settings
         </Button>
 
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleLogout}
-          className="text-zinc-500"
-        >
+        <Button variant="ghost" size="sm" onClick={handleLogout} className="text-zinc-500">
           <LogOut className="mr-2 h-4 w-4" />
           Logout
         </Button>

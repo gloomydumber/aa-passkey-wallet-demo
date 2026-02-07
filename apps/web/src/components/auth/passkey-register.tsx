@@ -104,7 +104,10 @@ export function PasskeyRegister({ onSuccess, onError }: PasskeyRegisterProps) {
   return (
     <div className="space-y-4">
       <div>
-        <label htmlFor="wallet-name" className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+        <label
+          htmlFor="wallet-name"
+          className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300"
+        >
           Wallet Name
         </label>
         <Input
@@ -129,8 +132,7 @@ export function PasskeyRegister({ onSuccess, onError }: PasskeyRegisterProps) {
       </Button>
 
       <p className="text-center text-xs text-zinc-500 dark:text-zinc-400">
-        Your passkey will be stored securely on this device.
-        No password needed.
+        Your passkey will be stored securely on this device. No password needed.
       </p>
     </div>
   );

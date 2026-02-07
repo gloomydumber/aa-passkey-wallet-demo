@@ -8,23 +8,21 @@ import { twMerge } from "tailwind-merge";
 
 type CardProps = HTMLAttributes<HTMLDivElement>;
 
-export const Card = forwardRef<HTMLDivElement, CardProps>(
-  ({ className, ...props }, ref) => {
-    return (
-      <div
-        ref={ref}
-        className={twMerge(
-          clsx(
-            "rounded-xl border border-zinc-200 bg-white p-6 shadow-sm",
-            "dark:border-zinc-800 dark:bg-zinc-900",
-            className
-          )
-        )}
-        {...props}
-      />
-    );
-  }
-);
+export const Card = forwardRef<HTMLDivElement, CardProps>(({ className, ...props }, ref) => {
+  return (
+    <div
+      ref={ref}
+      className={twMerge(
+        clsx(
+          "rounded-xl border border-zinc-200 bg-white p-6 shadow-sm",
+          "dark:border-zinc-800 dark:bg-zinc-900",
+          className
+        )
+      )}
+      {...props}
+    />
+  );
+});
 
 Card.displayName = "Card";
 
@@ -32,13 +30,7 @@ type CardHeaderProps = HTMLAttributes<HTMLDivElement>;
 
 export const CardHeader = forwardRef<HTMLDivElement, CardHeaderProps>(
   ({ className, ...props }, ref) => {
-    return (
-      <div
-        ref={ref}
-        className={twMerge(clsx("mb-4", className))}
-        {...props}
-      />
-    );
+    return <div ref={ref} className={twMerge(clsx("mb-4", className))} {...props} />;
   }
 );
 
@@ -69,9 +61,7 @@ export const CardDescription = forwardRef<HTMLParagraphElement, CardDescriptionP
     return (
       <p
         ref={ref}
-        className={twMerge(
-          clsx("mt-1 text-sm text-zinc-500 dark:text-zinc-400", className)
-        )}
+        className={twMerge(clsx("mt-1 text-sm text-zinc-500 dark:text-zinc-400", className))}
         {...props}
       />
     );
@@ -95,11 +85,7 @@ type CardFooterProps = HTMLAttributes<HTMLDivElement>;
 export const CardFooter = forwardRef<HTMLDivElement, CardFooterProps>(
   ({ className, ...props }, ref) => {
     return (
-      <div
-        ref={ref}
-        className={twMerge(clsx("mt-4 flex items-center", className))}
-        {...props}
-      />
+      <div ref={ref} className={twMerge(clsx("mt-4 flex items-center", className))} {...props} />
     );
   }
 );

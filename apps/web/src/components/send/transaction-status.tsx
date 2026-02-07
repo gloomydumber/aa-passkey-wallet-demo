@@ -11,7 +11,11 @@ import { Button } from "@/components/ui/button";
 import { Loader2, CheckCircle2, XCircle, ExternalLink, Copy, Check } from "lucide-react";
 import { useState, useCallback } from "react";
 import { formatEther } from "viem";
-import type { TransactionResult, TransactionDetails, GasEstimate } from "@/hooks/use-send-transaction";
+import type {
+  TransactionResult,
+  TransactionDetails,
+  GasEstimate,
+} from "@/hooks/use-send-transaction";
 import type { Network } from "@aa-wallet/types";
 
 interface TransactionStatusProps {
@@ -124,9 +128,7 @@ export function TransactionStatus({
           <div className="mb-6 w-full space-y-3 rounded-lg bg-zinc-50 p-4 dark:bg-zinc-800/50">
             {/* UserOp Hash */}
             <div className="flex items-center justify-between gap-2">
-              <span className="text-sm text-zinc-500 dark:text-zinc-400">
-                UserOp Hash
-              </span>
+              <span className="text-sm text-zinc-500 dark:text-zinc-400">UserOp Hash</span>
               <div className="flex items-center gap-2">
                 <span
                   className="font-mono text-sm text-zinc-900 dark:text-zinc-50"
@@ -141,9 +143,7 @@ export function TransactionStatus({
             {/* Transaction Hash (when available) */}
             {result.txHash && (
               <div className="flex items-center justify-between gap-2">
-                <span className="text-sm text-zinc-500 dark:text-zinc-400">
-                  Transaction
-                </span>
+                <span className="text-sm text-zinc-500 dark:text-zinc-400">Transaction</span>
                 <div className="flex items-center gap-2">
                   <a
                     href={`${explorerUrl}/tx/${result.txHash}`}
@@ -173,18 +173,14 @@ export function TransactionStatus({
             {status === "success" && actualGasCost && (
               <div className="border-t border-zinc-200 pt-3 dark:border-zinc-700">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-zinc-500 dark:text-zinc-400">
-                    Gas Fee Paid
-                  </span>
+                  <span className="text-sm text-zinc-500 dark:text-zinc-400">Gas Fee Paid</span>
                   <span className="text-sm font-medium text-green-600 dark:text-green-400">
                     {formatGasCost(actualGasCost)} {symbol}
                   </span>
                 </div>
                 {estimatedGasCost && (
                   <div className="mt-1 flex items-center justify-between">
-                    <span className="text-xs text-zinc-400 dark:text-zinc-500">
-                      Max was
-                    </span>
+                    <span className="text-xs text-zinc-400 dark:text-zinc-500">Max was</span>
                     <span className="text-xs text-zinc-400 dark:text-zinc-500">
                       {formatGasCost(estimatedGasCost)} {symbol}
                     </span>

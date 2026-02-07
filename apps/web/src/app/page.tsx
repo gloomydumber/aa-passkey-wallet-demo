@@ -105,9 +105,7 @@ export default function LoginPage() {
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
             <Wallet className="h-6 w-6 text-zinc-600 dark:text-zinc-400" />
           </div>
-          <CardTitle>
-            {mode === "register" ? "Create Your Wallet" : "Welcome Back"}
-          </CardTitle>
+          <CardTitle>{mode === "register" ? "Create Your Wallet" : "Welcome Back"}</CardTitle>
           <CardDescription>
             {mode === "register"
               ? "Secure your wallet with a passkey. No passwords needed."
@@ -129,10 +127,7 @@ export default function LoginPage() {
 
               {/* Login button */}
               {selectedCredential && (
-                <PasskeyLogin
-                  credential={selectedCredential}
-                  onSuccess={handleLoginSuccess}
-                />
+                <PasskeyLogin credential={selectedCredential} onSuccess={handleLoginSuccess} />
               )}
             </div>
           )}
@@ -140,20 +135,12 @@ export default function LoginPage() {
           <div className="mt-6 text-center">
             {mode === "register" ? (
               credentials.length > 0 && (
-                <Button
-                  variant="ghost"
-                  onClick={() => setMode("login")}
-                  className="text-sm"
-                >
+                <Button variant="ghost" onClick={() => setMode("login")} className="text-sm">
                   Already have a wallet? Sign in
                 </Button>
               )
             ) : (
-              <Button
-                variant="ghost"
-                onClick={() => setMode("register")}
-                className="text-sm"
-              >
+              <Button variant="ghost" onClick={() => setMode("register")} className="text-sm">
                 Create a new wallet
               </Button>
             )}

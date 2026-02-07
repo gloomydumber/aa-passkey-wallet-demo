@@ -38,7 +38,9 @@ async function authenticateWithWebAuthn(credentialId: string): Promise<void> {
       allowCredentials: [
         {
           type: "public-key",
-          id: Uint8Array.from(atob(credentialId.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0)),
+          id: Uint8Array.from(atob(credentialId.replace(/-/g, "+").replace(/_/g, "/")), (c) =>
+            c.charCodeAt(0)
+          ),
         },
       ],
       userVerification: "required",
@@ -107,16 +109,9 @@ export function PasskeyLogin({ credential, onSuccess, onError }: PasskeyLoginPro
 
   return (
     <div className="space-y-3">
-      {error && (
-        <p className="text-sm text-red-500 dark:text-red-400">{error}</p>
-      )}
+      {error && <p className="text-sm text-red-500 dark:text-red-400">{error}</p>}
 
-      <Button
-        onClick={handleLogin}
-        isLoading={isLoading}
-        className="w-full"
-        size="lg"
-      >
+      <Button onClick={handleLogin} isLoading={isLoading} className="w-full" size="lg">
         <KeyRound className="h-5 w-5" />
         Sign in with Passkey
       </Button>

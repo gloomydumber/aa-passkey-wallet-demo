@@ -25,7 +25,14 @@ interface SendFormProps {
   onSubmit: (to: Address, amount: string) => void;
 }
 
-export function SendForm({ balance, isLoading, gasEstimate, preEstimatedGas, chainId, onSubmit }: SendFormProps) {
+export function SendForm({
+  balance,
+  isLoading,
+  gasEstimate,
+  preEstimatedGas,
+  chainId: _chainId,
+  onSubmit,
+}: SendFormProps) {
   const [recipient, setRecipient] = useState("");
   const [amount, setAmount] = useState("");
   const [touched, setTouched] = useState({ recipient: false, amount: false });
@@ -48,9 +55,7 @@ export function SendForm({ balance, isLoading, gasEstimate, preEstimatedGas, cha
       try {
         const amountWei = parseEther(amount);
         const balanceWei = BigInt(balance.balance);
-        const totalRequired = gasEstimate
-          ? amountWei + gasEstimate.totalGasCost
-          : amountWei;
+        const totalRequired = gasEstimate ? amountWei + gasEstimate.totalGasCost : amountWei;
         if (totalRequired > balanceWei) {
           return "Insufficient balance";
         }

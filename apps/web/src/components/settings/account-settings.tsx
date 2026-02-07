@@ -47,13 +47,9 @@ function ConfirmModal({
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
             <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
           </div>
-          <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
-            {title}
-          </h3>
+          <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">{title}</h3>
         </div>
-        <p className="mb-6 text-sm text-zinc-600 dark:text-zinc-400">
-          {message}
-        </p>
+        <p className="mb-6 text-sm text-zinc-600 dark:text-zinc-400">{message}</p>
         <div className="flex gap-3">
           <Button variant="outline" onClick={onCancel} className="flex-1">
             Cancel
@@ -201,7 +197,8 @@ export function AccountSettings() {
             <div className="text-xs text-amber-700 dark:text-amber-300">
               <p className="font-medium">Backup & Restore Coming Soon</p>
               <p className="mt-1 text-amber-600 dark:text-amber-400">
-                Credentials are stored only in this browser. Clearing data or switching devices will remove access.
+                Credentials are stored only in this browser. Clearing data or switching devices will
+                remove access.
               </p>
             </div>
           </div>

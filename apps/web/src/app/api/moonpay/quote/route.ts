@@ -11,7 +11,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 // MoonPay API base URLs
 const MOONPAY_SANDBOX_API = "https://api.moonpay.com";
-const MOONPAY_PRODUCTION_API = "https://api.moonpay.com";
+// const MOONPAY_PRODUCTION_API = "https://api.moonpay.com"; // Reserved for future production use
 
 // Currency codes for supported networks
 const NETWORK_CURRENCY_CODES: Record<string, string> = {
@@ -42,23 +42,17 @@ interface MoonPayQuoteResponse {
 export async function POST(request: NextRequest) {
   try {
     const body: QuoteRequest = await request.json();
-    const { baseCurrencyAmount, chainId, isTestnet, baseCurrencyCode = "usd" } = body;
+    const { baseCurrencyAmount, chainId, isTestnet: _isTestnet, baseCurrencyCode = "usd" } = body;
 
     // Validate amount
     if (!baseCurrencyAmount || baseCurrencyAmount <= 0) {
-      return NextResponse.json(
-        { error: "Invalid amount" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid amount" }, { status: 400 });
     }
 
     // Get API key
     const apiKey = process.env.NEXT_PUBLIC_MOONPAY_API_KEY;
     if (!apiKey) {
-      return NextResponse.json(
-        { error: "MoonPay API key not configured" },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: "MoonPay API key not configured" }, { status: 500 });
     }
 
     // Get currency code for the network
@@ -77,7 +71,7 @@ export async function POST(request: NextRequest) {
     const response = await fetch(url.toString(), {
       method: "GET",
       headers: {
-        "Accept": "application/json",
+        Accept: "application/json",
       },
     });
 

@@ -50,17 +50,8 @@ export function AccountCard({ address, explorerUrl }: AccountCardProps) {
           </div>
 
           <div className="flex gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleCopy}
-              className="h-8 w-8 p-0"
-            >
-              {copied ? (
-                <Check className="h-4 w-4 text-green-500" />
-              ) : (
-                <Copy className="h-4 w-4" />
-              )}
+            <Button variant="ghost" size="sm" onClick={handleCopy} className="h-8 w-8 p-0">
+              {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
             </Button>
 
             {explorerUrl && (

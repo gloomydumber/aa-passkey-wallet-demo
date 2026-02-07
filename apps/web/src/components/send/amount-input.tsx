@@ -23,9 +23,7 @@ export const AmountInput = forwardRef<HTMLInputElement, AmountInputProps>(
     return (
       <div className="w-full space-y-2">
         <div className="flex items-center justify-between">
-          <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            Amount
-          </label>
+          <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Amount</label>
           {onMaxClick && (
             <Button
               type="button"

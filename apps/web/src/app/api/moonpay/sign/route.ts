@@ -37,10 +37,7 @@ export async function POST(request: NextRequest) {
 
     // Validate wallet address
     if (!walletAddress || !/^0x[a-fA-F0-9]{40}$/.test(walletAddress)) {
-      return NextResponse.json(
-        { error: "Invalid wallet address" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid wallet address" }, { status: 400 });
     }
 
     // Get API keys from environment
@@ -48,10 +45,7 @@ export async function POST(request: NextRequest) {
     const secretKey = process.env.MOONPAY_SECRET_KEY;
 
     if (!apiKey) {
-      return NextResponse.json(
-        { error: "MoonPay API key not configured" },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: "MoonPay API key not configured" }, { status: 500 });
     }
 
     if (!secretKey) {
@@ -95,9 +89,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ url: signedUrl });
   } catch (error) {
     console.error("MoonPay sign error:", error);
-    return NextResponse.json(
-      { error: "Failed to sign MoonPay URL" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to sign MoonPay URL" }, { status: 500 });
   }
 }

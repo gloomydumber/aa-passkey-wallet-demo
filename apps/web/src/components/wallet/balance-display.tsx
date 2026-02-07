@@ -36,7 +36,12 @@ function formatBalanceDisplay(value: string, maxDecimals: number = 6): string {
   return parseFloat(truncated).toString();
 }
 
-export function BalanceDisplay({ balance, isLoading, onRefresh, networkName }: BalanceDisplayProps) {
+export function BalanceDisplay({
+  balance,
+  isLoading,
+  onRefresh,
+  networkName,
+}: BalanceDisplayProps) {
   // NativeBalance has formattedBalance pre-computed, but we truncate for display
   const displayBalance = balance
     ? `${formatBalanceDisplay(balance.formattedBalance)} ${balance.symbol}`
@@ -46,9 +51,7 @@ export function BalanceDisplay({ balance, isLoading, onRefresh, networkName }: B
     <Card>
       <CardContent className="p-6">
         <div className="flex items-center justify-between">
-          <div className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
-            Balance
-          </div>
+          <div className="text-sm font-medium text-zinc-500 dark:text-zinc-400">Balance</div>
           {onRefresh && (
             <Button
               variant="ghost"

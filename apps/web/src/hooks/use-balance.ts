@@ -23,37 +23,43 @@ interface UseBalanceResult {
   refetch: () => Promise<void>;
 }
 
-export function useBalance({ address, refetchInterval = 30000 }: UseBalanceOptions): UseBalanceResult {
+export function useBalance({
+  address,
+  refetchInterval = 30000,
+}: UseBalanceOptions): UseBalanceResult {
   const { activeNetwork } = useNetworkStore();
   const [balance, setBalance] = useState<NativeBalance | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  const fetchBalance = useCallback(async (isInitial = false) => {
-    if (!address) {
-      setBalance(null);
-      return;
-    }
-
-    // Only show loading state for initial fetch, not background refetches
-    if (isInitial) {
-      setIsLoading(true);
-    }
-    setError(null);
-
-    try {
-      const balanceService = createBalanceService(activeNetwork);
-      const nativeBalance = await balanceService.getNativeBalance(address);
-      setBalance(nativeBalance);
-    } catch (err) {
-      console.error("Failed to fetch balance:", err);
-      setError(err instanceof Error ? err : new Error("Failed to fetch balance"));
-    } finally {
-      if (isInitial) {
-        setIsLoading(false);
+  const fetchBalance = useCallback(
+    async (isInitial = false) => {
+      if (!address) {
+        setBalance(null);
+        return;
       }
-    }
-  }, [address, activeNetwork]);
+
+      // Only show loading state for initial fetch, not background refetches
+      if (isInitial) {
+        setIsLoading(true);
+      }
+      setError(null);
+
+      try {
+        const balanceService = createBalanceService(activeNetwork);
+        const nativeBalance = await balanceService.getNativeBalance(address);
+        setBalance(nativeBalance);
+      } catch (err) {
+        console.error("Failed to fetch balance:", err);
+        setError(err instanceof Error ? err : new Error("Failed to fetch balance"));
+      } finally {
+        if (isInitial) {
+          setIsLoading(false);
+        }
+      }
+    },
+    [address, activeNetwork]
+  );
 
   // Fetch on mount and when dependencies change
   useEffect(() => {

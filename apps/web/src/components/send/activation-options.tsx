@@ -106,8 +106,8 @@ export function ActivationOptions({
       <CardHeader>
         <CardTitle>Account Activation Required</CardTitle>
         <CardDescription>
-          Your smart account needs to be activated before you can send transactions.
-          Choose an option below to get started.
+          Your smart account needs to be activated before you can send transactions. Choose an
+          option below to get started.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">

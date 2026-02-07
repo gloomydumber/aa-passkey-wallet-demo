@@ -69,11 +69,7 @@ function formatRelativeTime(timestamp: number): string {
   return new Date(timestamp).toLocaleDateString();
 }
 
-export function CredentialSelector({
-  credentials,
-  selectedId,
-  onSelect,
-}: CredentialSelectorProps) {
+export function CredentialSelector({ credentials, selectedId, onSelect }: CredentialSelectorProps) {
   if (credentials.length === 0) {
     return null;
   }
@@ -96,9 +92,7 @@ export function CredentialSelector({
     <div className="space-y-3">
       {/* Most recently used - shown separately */}
       <div>
-        <p className="mb-1.5 text-xs font-medium text-zinc-500 dark:text-zinc-400">
-          Recent
-        </p>
+        <p className="mb-1.5 text-xs font-medium text-zinc-500 dark:text-zinc-400">Recent</p>
         <CredentialCard
           credential={mostRecent}
           isSelected={selectedId === mostRecent.id}

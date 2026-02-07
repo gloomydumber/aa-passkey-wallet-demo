@@ -36,7 +36,7 @@ export function isMoonPayAvailable(): boolean {
  * Note: MoonPay sandbox only supports Ethereum Sepolia, not Arbitrum Sepolia
  */
 const MOONPAY_SUPPORTED_CHAIN_IDS: number[] = [
-  1,        // Ethereum Mainnet
+  1, // Ethereum Mainnet
   11155111, // Ethereum Sepolia
   // 42161,  // Arbitrum One - not enabled for now
   // 421614, // Arbitrum Sepolia - not supported in MoonPay sandbox
