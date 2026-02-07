@@ -33,11 +33,18 @@ jobs:
       - name: Check formatting
         run: npm run format:check
 
+      - name: Build library packages
+        run: |
+          npm run build --workspace=@aa-wallet/types
+          npm run build --workspace=@aa-wallet/utils
+          npm run build --workspace=@aa-wallet/core
+          npm run build --workspace=@aa-wallet/passkey
+
       - name: Run tests
         run: npm test
 
-      - name: Build all packages
-        run: npm run build
+      - name: Build web app
+        run: npm run build --workspace=@aa-wallet/web
         env:
           # Required for Next.js build (optional - uses defaults if not set)
           NEXT_PUBLIC_PIMLICO_API_KEY: ${{ secrets.NEXT_PUBLIC_PIMLICO_API_KEY }}
