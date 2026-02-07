@@ -91,29 +91,30 @@ aa-passkey-wallet-demo/
 
 ## Tech Stack
 
-| Category | Technology |
-|----------|------------|
-| Framework | Next.js 16 (App Router) |
-| Language | TypeScript |
-| Styling | Tailwind CSS v4 |
-| State | Zustand |
-| EVM | viem |
-| AA SDK | permissionless |
-| Bundler/Paymaster | Pimlico |
-| Smart Account | Coinbase Smart Wallet |
-| Testing | Vitest |
-| CI/CD | GitHub Actions |
+| Category          | Technology              |
+| ----------------- | ----------------------- |
+| Framework         | Next.js 16 (App Router) |
+| Language          | TypeScript              |
+| Styling           | Tailwind CSS v4         |
+| State             | Zustand                 |
+| EVM               | viem                    |
+| AA SDK            | permissionless          |
+| Bundler/Paymaster | Pimlico                 |
+| Smart Account     | Coinbase Smart Wallet   |
+| Testing           | Vitest                  |
+| CI/CD             | GitHub Actions          |
 
 ## Supported Networks
 
-| Network | Chain ID | Status |
-|---------|----------|--------|
+| Network          | Chain ID | Status  |
+| ---------------- | -------- | ------- |
 | Ethereum Sepolia | 11155111 | Testnet |
-| Arbitrum Sepolia | 421614 | Testnet |
+| Arbitrum Sepolia | 421614   | Testnet |
 
 ## User Flows
 
 ### New User
+
 1. Register with passkey (biometric/security key)
 2. View counterfactual smart account address
 3. Fund wallet (MoonPay or receive ETH)
@@ -121,20 +122,21 @@ aa-passkey-wallet-demo/
 5. Send transactions
 
 ### Returning User
+
 1. Login with passkey
 2. Access dashboard with balance
 3. Send, Fund, or view Activity
 
 ## Scripts
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start development server |
-| `npm run build` | Build all packages |
-| `npm test` | Run tests |
-| `npm run lint` | Lint code |
-| `npm run format` | Format code with Prettier |
-| `npm run typecheck` | TypeScript type checking |
+| Command             | Description               |
+| ------------------- | ------------------------- |
+| `npm run dev`       | Start development server  |
+| `npm run build`     | Build all packages        |
+| `npm test`          | Run tests                 |
+| `npm run lint`      | Lint code                 |
+| `npm run format`    | Format code with Prettier |
+| `npm run typecheck` | TypeScript type checking  |
 
 ## Testing
 
@@ -148,14 +150,6 @@ npm run test:watch
 # Run tests with coverage
 npm run test:coverage
 ```
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
 
 ## License
 
