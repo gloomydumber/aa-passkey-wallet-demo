@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "cd ../.. && npm install && npm run build --workspace=@aa-wallet/web",
+  "installCommand": "cd ../.. && npm install",
+  "buildCommand": "cd ../.. && npm run build --workspace=@aa-wallet/web",
   "outputDirectory": ".next",
-  "installCommand": "echo 'Skipping install - handled in buildCommand'",
   "framework": "nextjs"
 }
