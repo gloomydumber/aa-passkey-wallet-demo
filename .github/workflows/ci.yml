@@ -36,8 +36,8 @@ jobs:
       - name: Run tests
         run: npm test
 
-      - name: Build web app
-        run: npm run build --workspace=@aa-wallet/web
+      - name: Build all packages
+        run: npm run build
         env:
           # Required for Next.js build (optional - uses defaults if not set)
           NEXT_PUBLIC_PIMLICO_API_KEY: ${{ secrets.NEXT_PUBLIC_PIMLICO_API_KEY }}
