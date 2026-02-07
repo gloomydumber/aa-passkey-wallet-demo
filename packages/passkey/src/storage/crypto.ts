@@ -22,7 +22,7 @@ export class WebCryptoAdapter implements CryptoAdapter {
     const iv = this.generateRandomBytes(IV_LENGTH);
     const key = await this.deriveKey(secret, salt);
 
-    const ciphertext = await crypto.subtle.encrypt(
+    const ciphertext = await globalThis.crypto.subtle.encrypt(
       { name: "AES-GCM", iv: iv.buffer as ArrayBuffer },
       key,
       data.buffer as ArrayBuffer
@@ -44,7 +44,7 @@ export class WebCryptoAdapter implements CryptoAdapter {
     const ciphertext = base64ToUint8Array(encrypted.ciphertext);
     const key = await this.deriveKey(secret, salt);
 
-    const plaintext = await crypto.subtle.decrypt(
+    const plaintext = await globalThis.crypto.subtle.decrypt(
       { name: "AES-GCM", iv: iv.buffer as ArrayBuffer },
       key,
       ciphertext.buffer as ArrayBuffer
@@ -58,7 +58,7 @@ export class WebCryptoAdapter implements CryptoAdapter {
    */
   generateRandomBytes(length: number): Uint8Array {
     const bytes = new Uint8Array(length);
-    crypto.getRandomValues(bytes);
+    globalThis.crypto.getRandomValues(bytes);
     return bytes;
   }
 
@@ -69,7 +69,7 @@ export class WebCryptoAdapter implements CryptoAdapter {
     const encoder = new TextEncoder();
     const passwordBuffer = encoder.encode(password);
 
-    const baseKey = await crypto.subtle.importKey(
+    const baseKey = await globalThis.crypto.subtle.importKey(
       "raw",
       passwordBuffer.buffer as ArrayBuffer,
       "PBKDF2",
@@ -77,7 +77,7 @@ export class WebCryptoAdapter implements CryptoAdapter {
       ["deriveKey"]
     );
 
-    return crypto.subtle.deriveKey(
+    return globalThis.crypto.subtle.deriveKey(
       {
         name: "PBKDF2",
         salt: salt.buffer as ArrayBuffer,
@@ -97,7 +97,7 @@ export class WebCryptoAdapter implements CryptoAdapter {
  */
 export function generateChallenge(): string {
   const bytes = new Uint8Array(32);
-  crypto.getRandomValues(bytes);
+  globalThis.crypto.getRandomValues(bytes);
   return uint8ArrayToBase64(bytes);
 }
 
@@ -106,6 +106,6 @@ export function generateChallenge(): string {
  */
 export function generateUserId(): string {
   const bytes = new Uint8Array(16);
-  crypto.getRandomValues(bytes);
+  globalThis.crypto.getRandomValues(bytes);
   return uint8ArrayToBase64(bytes);
 }
