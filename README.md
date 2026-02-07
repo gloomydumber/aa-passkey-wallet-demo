@@ -4,6 +4,8 @@ A web-based blockchain wallet combining **Account Abstraction (EIP-4337)** smart
 
 [![CI](https://github.com/gloomydumber/aa-passkey-wallet-demo/actions/workflows/ci.yml/badge.svg)](https://github.com/gloomydumber/aa-passkey-wallet-demo/actions/workflows/ci.yml)
 
+**Live Demo:** [https://aa-passkey-wallet-demo-web.vercel.app](https://aa-passkey-wallet-demo-web.vercel.app)
+
 ## Features
 
 - **Passkey Authentication** - No passwords, use biometrics or security keys
