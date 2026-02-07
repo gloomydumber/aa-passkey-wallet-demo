@@ -21,7 +21,7 @@
     "typecheck": "tsc --noEmit"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.9.0"
   },
   "keywords": [
     "wallet",
